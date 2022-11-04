@@ -215,7 +215,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
         }
 
         public Class<?>[] getObjectParameterTypes() {
-            var x0 = invocationParams
+            List<Class<?>> x0 = invocationParams
                     .stream()
                     .flatMap(x -> Arrays.stream(x.getClass().getDeclaredFields()).distinct())
                     .map(Field::getType)
@@ -240,7 +240,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
                         .map(field -> {
                             field.setAccessible(true);
                             try {
-                                var value = field.get(val);
+                                Object value = field.get(val);
                                 return new ImmutablePair(field.getName(), value);
                             } catch (IllegalAccessException e) {
                                 throw new RuntimeException(e);
