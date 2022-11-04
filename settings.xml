@@ -1,0 +1,13 @@
+<settings>
+    <profiles>
+        <profile>
+            <id>ossrh</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <gpg.passphrase>Vashil311096</gpg.passphrase>
+            </properties>
+        </profile>
+    </profiles>
+</settings>
