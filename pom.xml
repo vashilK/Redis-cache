@@ -8,7 +8,7 @@
     <name>Redis-cache</name>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.4</version>
     <packaging>jar</packaging>
     <url>https://github.com/vashilK/Redis-cache</url>
     <description>Based on Springboot's implementation of Redis with added functionality.</description>
@@ -69,7 +69,7 @@
             <version>${gson.version}</version>
         </dependency>
         <dependency>
-            <groupId>aspectj</groupId>
+            <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <version>${aspectJ.version}</version>
         </dependency>
@@ -164,6 +164,13 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                                <configuration>
+                                    <!-- Prevent `gpg` from using pinentry programs -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
