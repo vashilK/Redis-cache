@@ -69,27 +69,16 @@ public class CacheSyncHandler implements ApplicationContextAware {
                 .distinct()
                 .collect(Collectors.toList());
 
-        Set<MethodWrapper> methodInvocationParams = redisKeys.stream()
-                .map(key -> key.replace("[", "").replace("]", ""))
-                .map(key -> key.split("\\("))
-                .map(values -> {
-                    if (values.length > 1) {
-                        String[] arr = values[1].replace(")", "").split(",");
-                        List<MethodAttribute> attributeValues = StreamSupport
-                                .stream(Arrays.stream(arr).spliterator(), false)
-                                .map(param -> param.split("="))
-                                .map(params -> new MethodAttribute(params[0].trim(), params[1]))
-                                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(redisKeys)) {
+            Set<MethodWrapper> methodInvocationParams = getMethodInvocationParams(redisKeys);
+            List<MethodInvocation> methodInvocations = getMethodInvocations(methods, methodInvocationParams);
+            CompletableFuture<Object> completableFuture = methodFutureInvocations(redisKeys, methodInvocations);
+            completableFuture.join();
+        }
+    }
 
-                        return new MethodWrapper(values[0].split("::")[1], attributeValues);
-                    }
-
-                    return new MethodWrapper(values[0].split("::")[1], Collections.emptyList());
-                })
-                .collect(Collectors.toSet());
-
-
-        List<MethodInvocation> methodInvocations = methods.stream()
+    private List<MethodInvocation> getMethodInvocations(List<Method> methods, Set<MethodWrapper> methodInvocationParams) {
+        return methods.stream()
                 .map(m0 ->
                         methodInvocationParams
                                 .stream()
@@ -137,7 +126,31 @@ public class CacheSyncHandler implements ApplicationContextAware {
                                 .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
 
+    private Set<MethodWrapper> getMethodInvocationParams(Set<String> redisKeys) {
+        return redisKeys.stream()
+                .map(key -> key.replace("[", "").replace("]", ""))
+                .map(key -> key.split("\\("))
+                .map(values -> {
+                    if (values.length > 1) {
+                        String[] arr = values[1].replace(")", "").split(",");
+                        List<MethodAttribute> attributeValues = StreamSupport
+                                .stream(Arrays.stream(arr).spliterator(), false)
+                                .map(param -> param.split("="))
+                                .map(params -> new MethodAttribute(params[0].trim(), params[1]))
+                                .collect(Collectors.toList());
+
+                        return new MethodWrapper(values[0].split("::")[1], attributeValues);
+                    }
+
+                    return new MethodWrapper(values[0].split("::")[1], Collections.emptyList());
+                })
+                .collect(Collectors.toSet());
+    }
+
+
+    private CompletableFuture<Object> methodFutureInvocations(Set<String> redisKeys, List<MethodInvocation> methodInvocations) {
         CompletableFuture<Object> completableFuture = CompletableFuture.supplyAsync(Object::new);
 
         completableFuture
@@ -178,7 +191,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
                             });
                 });
 
-        completableFuture.join();
+        return completableFuture;
     }
 
     @Override
