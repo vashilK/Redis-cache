@@ -53,11 +53,17 @@
         <redis.version>4.3.1</redis.version>
         <gson.version>2.10</gson.version>
         <aspectJ.version>1.5.4</aspectJ.version>
+        <redis.version>3.6.0</redis.version>
         <fasterxml.version>2.14.0</fasterxml.version>
         <slf4j.version>2.0.3</slf4j.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${redis.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
@@ -106,6 +112,22 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>github</id>
+            <repositories>
+                <repository>
+                    <id>central</id>
+                    <url>https://repo1.maven.org/maven2</url>
+                </repository>
+                <repository>
+                    <id>github</id>
+                    <url>https://maven.pkg.github.com/vashilK/redis-cache</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
         <profile>
             <id>release</id>
             <build>
