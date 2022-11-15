@@ -10,7 +10,7 @@ the provided annotations.
 ## Getting Started
 To get started with Jedis, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
 
-```
+```xml
 <dependency>
   <groupId>io.github.vashilk</groupId>
   <artifactId>redis-cache</artifactId>
@@ -19,7 +19,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 ```
 
 Next you will need to connect to your Redis instance
-```
+```java
 @Configuration
 public class RedisConfig {
 
@@ -52,14 +52,14 @@ make sure the implementation beneath uses RedisTemplate for the annotation to wo
 
 Next you will use custom annotations:
 
-```
+```java
 @CacheSave(group="group-name")
 ```
 Any method annotated with the one above will be cached. Designed to be used on methods that return data, specifically for
 heavily used ones with similar parameters.
 
 
-```
+```java
 @CacheSync(group="group-name")
 ```
 Methods annotated with the one above will trigger a synchronization of data for all methods
