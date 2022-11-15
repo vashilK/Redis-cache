@@ -38,14 +38,6 @@ public class CacheHelper {
         return String.join("::", patternBuilder);
     }
 
-    public static String getCacheSyncPattern(JoinPoint joinPoint, Method method) {
-        List<String> patternBuilder = new ArrayList<>();
-        patternBuilder.add(method.getAnnotation(CacheSync.class).group());
-        patternBuilder.add(method.getName());
-        patternBuilder.add(Arrays.stream(joinPoint.getArgs()).filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(",")));
-        return String.join("::", patternBuilder);
-    }
-
     public static List<Method> getMethodsAnnotatedWith(final Class<?> type, final Class<? extends Annotation> annotation) {
         final List<Method> methods = new ArrayList<Method>();
         Class<?> clazz = type;

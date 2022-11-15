@@ -79,6 +79,46 @@ public class CacheSyncHandler implements ApplicationContextAware {
         }
     }
 
+    private MethodInvocation buildMethodInvocation(Method m0, MethodWrapper methodInvocationParam) {
+        List<MethodAttribute> attributes = methodInvocationParam.getAttributes();
+        List<Object> parameters = new ArrayList<>();
+
+        if (!CollectionUtils.isEmpty(attributes)) {
+            for (Class<?> param : m0.getParameterTypes()) {
+                try {
+                    Object obj = Class.forName(param.getName()).getDeclaredConstructor().newInstance();
+                    Field[] fields = obj.getClass().getDeclaredFields();
+
+                    for (Field field : fields) {
+                        attributes
+                                .stream()
+                                .filter(data -> Objects.equals(field.getName(), data.getAttributeName()))
+                                .map(MethodAttribute::getAttributeValue)
+                                .filter(data -> !Objects.equals(data, "null"))
+                                .findFirst()
+                                .ifPresent(val -> {
+                                    try {
+                                        field.setAccessible(true);
+                                        field.set(obj, cast(field.getType(), val));
+                                    } catch (IllegalAccessException e) {
+                                        throw new RuntimeException();
+                                    }
+
+                                });
+                    }
+
+                    parameters.add(obj);
+                } catch (ClassNotFoundException | InvocationTargetException |
+                         InstantiationException | IllegalAccessException |
+                         NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        return new MethodInvocation(m0, parameters);
+    }
+
     private List<MethodInvocation> getMethodInvocations(List<Method> methods, Set<MethodWrapper> methodInvocationParams) {
         return methods.stream()
                 .map(m0 ->
@@ -86,45 +126,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
                                 .stream()
                                 .filter(methodInvocationParam -> Objects.equals(methodInvocationParam.getMethodName(), m0.getName()))
                                 .findFirst()
-                                .map(methodInvocationParam -> {
-                                    List<MethodAttribute> attributes = methodInvocationParam.getAttributes();
-                                    List<Object> parameters = new ArrayList<>();
-
-                                    if (!CollectionUtils.isEmpty(attributes)) {
-                                        for (Class<?> param : m0.getParameterTypes()) {
-                                            try {
-                                                Object obj = Class.forName(param.getName()).getDeclaredConstructor().newInstance();
-                                                Field[] fields = obj.getClass().getDeclaredFields();
-
-                                                for (Field field : fields) {
-                                                    attributes
-                                                            .stream()
-                                                            .filter(data -> Objects.equals(field.getName(), data.getAttributeName()))
-                                                            .map(MethodAttribute::getAttributeValue)
-                                                            .filter(data -> !Objects.equals(data, "null"))
-                                                            .findFirst()
-                                                            .ifPresent(val -> {
-                                                                try {
-                                                                    field.setAccessible(true);
-                                                                    field.set(obj, cast(field.getType(), val));
-                                                                } catch (IllegalAccessException e) {
-                                                                    throw new RuntimeException();
-                                                                }
-
-                                                            });
-                                                }
-
-                                                parameters.add(obj);
-                                            } catch (ClassNotFoundException | InvocationTargetException |
-                                                     InstantiationException | IllegalAccessException |
-                                                     NoSuchMethodException e) {
-                                                throw new RuntimeException(e);
-                                            }
-                                        }
-                                    }
-
-                                    return new MethodInvocation(m0, parameters);
-                                })
+                                .map(methodInvocationParam -> buildMethodInvocation(m0, methodInvocationParam))
                                 .orElse(null))
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -151,6 +153,21 @@ public class CacheSyncHandler implements ApplicationContextAware {
                 .collect(Collectors.toSet());
     }
 
+    private Object invokeMethod(MethodInvocation methodInvocation) {
+        try {
+            Class<?> clazz = methodInvocation.getMethod().getDeclaringClass();
+            Object invocationServiceContext = applicationContext.getBean(clazz);
+            Method m0 = invocationServiceContext.getClass().getDeclaredMethod(methodInvocation.getMethod().getName(), methodInvocation.getParameterTypes());
+            if (!CollectionUtils.isEmpty(methodInvocation.getInvocationParams())) {
+                return m0.invoke(invocationServiceContext, methodInvocation.getInvocationValues());
+            } else {
+                return m0.invoke(invocationServiceContext);
+            }
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
+                 InstantiationException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private CompletableFuture<Object> methodFutureInvocations(Set<String> redisKeys, List<MethodInvocation> methodInvocations) {
         CompletableFuture<Object> completableFuture = CompletableFuture.supplyAsync(Object::new);
@@ -171,21 +188,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
         methodInvocations
                 .forEach(methodInvocation -> {
                     completableFuture
-                            .thenApply(i -> {
-                                Class<?> clazz = methodInvocation.getMethod().getDeclaringClass();
-                                try {
-                                    Object invocationServiceContext = applicationContext.getBean(clazz);
-                                    Method m0 = invocationServiceContext.getClass().getDeclaredMethod(methodInvocation.getMethod().getName(), methodInvocation.getParameterTypes());
-                                    if (!CollectionUtils.isEmpty(methodInvocation.getInvocationParams())) {
-                                        return m0.invoke(invocationServiceContext, methodInvocation.getInvocationValues());
-                                    } else {
-                                        return m0.invoke(invocationServiceContext);
-                                    }
-                                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException |
-                                         InstantiationException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            })
+                            .thenApply(i -> invokeMethod(methodInvocation))
                             .whenComplete((val, detail) -> {
                                 if (detail != null) {
                                     logger.error("failure: {}", detail.getMessage());
