@@ -22,7 +22,6 @@ import static org.nki.redis.cache.utils.CacheHelper.getPattern;
  */
 
 @Aspect
-@Component
 public class CacheSaveHandler {
 
     private final Gson gson;
