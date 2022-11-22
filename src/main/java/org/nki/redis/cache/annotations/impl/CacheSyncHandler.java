@@ -9,17 +9,13 @@ import org.nki.redis.cache.annotations.CacheSync;
 import org.nki.redis.cache.model.MethodAttribute;
 import org.nki.redis.cache.model.MethodInvocation;
 import org.nki.redis.cache.model.MethodWrapper;
+import org.nki.redis.cache.utils.CacheHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -27,12 +23,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static org.nki.redis.cache.utils.CacheHelper.getMethod;
@@ -44,10 +38,8 @@ import static org.nki.redis.cache.utils.Transformer.cast;
  */
 
 @Aspect
-@Component
-public class CacheSyncHandler implements ApplicationContextAware {
+public class CacheSyncHandler {
 
-    private static ApplicationContext applicationContext;
     private final RedisTemplate<String, Object> template;
     private final Logger logger = LoggerFactory.getLogger(CacheSyncHandler.class);
 
@@ -56,18 +48,16 @@ public class CacheSyncHandler implements ApplicationContextAware {
     }
 
     @AfterReturning(pointcut = "@annotation(org.nki.redis.cache.annotations.CacheSync)")
-    public void synchronize(JoinPoint joinPoint) throws NoSuchMethodException {
+    public void synchronize(JoinPoint joinPoint) throws NoSuchMethodException, IOException, ClassNotFoundException {
         Method method = getMethod(joinPoint);
         String groupName = method.getAnnotation(CacheSync.class).group();
 
         Set<String> redisKeys = template.keys(groupName + "::*");
-        Map<String, Object> services = applicationContext.getBeansWithAnnotation(Service.class);
-        Map<String, Object> components = applicationContext.getBeansWithAnnotation(Component.class);
-        List<Object> classes = Stream.concat(services.values().stream(), components.values().stream()).collect(Collectors.toList());
+        List<Class<?>> classes = CacheHelper.getAllClasses();
 
         List<Method> methods = classes
                 .stream()
-                .flatMap(clazz -> getMethodsAnnotatedWith(clazz.getClass(), CacheSave.class).stream())
+                .flatMap(clazz -> getMethodsAnnotatedWith(clazz, CacheSave.class).stream())
                 .distinct()
                 .collect(Collectors.toList());
 
@@ -156,7 +146,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
     private Object invokeMethod(MethodInvocation methodInvocation) {
         try {
             Class<?> clazz = methodInvocation.getMethod().getDeclaringClass();
-            Object invocationServiceContext = applicationContext.getBean(clazz);
+            Object invocationServiceContext = clazz.getDeclaredConstructor().newInstance();
             Method m0 = invocationServiceContext.getClass().getDeclaredMethod(methodInvocation.getMethod().getName(), methodInvocation.getParameterTypes());
             if (!CollectionUtils.isEmpty(methodInvocation.getInvocationParams())) {
                 return m0.invoke(invocationServiceContext, methodInvocation.getInvocationValues());
@@ -197,10 +187,5 @@ public class CacheSyncHandler implements ApplicationContextAware {
                 });
 
         return completableFuture;
-    }
-
-    @Override
-    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
-        CacheSyncHandler.applicationContext = applicationContext;
     }
 }
