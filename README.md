@@ -14,8 +14,14 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
   <groupId>io.github.vashilk</groupId>
   <artifactId>redis-cache</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5.1</version>
 </dependency>
+```
+
+For Gradle:
+
+```kotlin
+implementation("io.github.vashilk:redis-cache:1.0.5.1")
 ```
 
 Next you will need to connect to your Redis instance
