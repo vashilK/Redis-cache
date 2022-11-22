@@ -35,8 +35,8 @@ public class CacheHelper {
                 assert !file.getName().contains(".");
                 classes.addAll(findClasses(file, packageName + "." + file.getName()));
             } else if (file.getName().endsWith(".class")) {
-                packageName = packageName.substring(1, packageName.length());
-                classes.add(Class.forName(packageName + '.' + file.getName().substring(0, file.getName().length() - 6)));
+                String root = packageName.substring(1);
+                classes.add(Class.forName(root + '.' + file.getName().substring(0, file.getName().length() - 6)));
             }
         }
 
