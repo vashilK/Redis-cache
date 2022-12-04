@@ -1,14 +1,13 @@
 package org.nki.redis.cache.annotations.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -24,18 +23,16 @@ import static org.nki.redis.cache.utils.CacheHelper.getPattern;
 @Aspect
 public class CacheSaveHandler {
 
-    private final Gson gson;
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
 
-    public CacheSaveHandler(Gson gson, ObjectMapper objectMapper, RedisTemplate<String, Object> redisTemplate) {
-        this.gson = gson;
+    public CacheSaveHandler(ObjectMapper objectMapper, RedisTemplate<String, Object> redisTemplate) {
         this.objectMapper = objectMapper;
         this.redisTemplate = redisTemplate;
     }
 
     @Around(value = "@annotation(org.nki.redis.cache.annotations.CacheSave)")
-    public Object fetchCache(ProceedingJoinPoint joinPoint) throws NoSuchMethodException {
+    public Object fetchCache(ProceedingJoinPoint joinPoint) throws NoSuchMethodException, JsonProcessingException {
         Method method = getMethod(joinPoint);
         String pattern = getPattern(joinPoint, method);
 
@@ -60,9 +57,9 @@ public class CacheSaveHandler {
     }
 
     @AfterReturning(pointcut = "@annotation(org.nki.redis.cache.annotations.CacheSave)", returning = "result")
-    public void persisResult(JoinPoint joinPoint, Object result) throws NoSuchMethodException {
+    public void persisResult(JoinPoint joinPoint, Object result) throws NoSuchMethodException, JsonProcessingException {
         Method method = getMethod(joinPoint);
         String pattern = getPattern(joinPoint, method);
-        redisTemplate.opsForValue().set(pattern, gson.toJson(result));
+        redisTemplate.opsForValue().set(pattern, objectMapper.writeValueAsString(result));
     }
 }
