@@ -10,6 +10,9 @@ import java.util.List;
  */
 public class Transformer {
 
+    public static final List<Class<?>> rawTypes = Arrays.asList(Integer.class, Double.class, Float.class, Character.class, Long.class, BigDecimal.class,
+            Boolean.class, Byte.class, Short.class, String.class);
+
     public static Object cast(Class<?> rawType, Object val) {
         if (rawType == Integer.class) {
             return Integer.valueOf((String) val);
@@ -44,7 +47,4 @@ public class Transformer {
 
         throw new RuntimeException("Error: data could not be passed to wrapper class.");
     }
-
-    public static List<Class<?>> rawTypes = Arrays.asList(Integer.class, Double.class, Float.class, Character.class, Long.class, BigDecimal.class,
-            Boolean.class, Byte.class, Short.class, String.class);
 }

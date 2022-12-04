@@ -11,8 +11,6 @@ public class TestModel {
     private String name;
     private Integer age;
 
-    public TestModel() {}
-
     public TestModel(String name, Integer age) {
         this.name = name;
         this.age = age;

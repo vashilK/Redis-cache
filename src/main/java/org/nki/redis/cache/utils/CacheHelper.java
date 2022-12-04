@@ -102,13 +102,13 @@ public class CacheHelper {
         for (Object arg : arguments) {
             if (arg instanceof List) {
                 List<?> array = (List<?>) arg;
-                String dataType = array.size() > 0 ? array.stream().findFirst().map(type -> type.getClass().getSimpleName()).orElse("") : "Object";
+                String dataType = !array.isEmpty() ? array.stream().findFirst().map(type -> type.getClass().getSimpleName()).orElse("") : "Object";
                 String jsonData = OBJECT_MAPPER.writeValueAsString(array);
                 String key = "List<" + dataType + ">=" + jsonData;
                 args.add(key);
             } else if (arg instanceof Set) {
                 Set<?> array = (Set<?>) arg;
-                String dataType = array.size() > 0 ? array.stream().findFirst().map(type -> type.getClass().getSimpleName()).orElse("") : "Object";
+                String dataType = !array.isEmpty() ? array.stream().findFirst().map(type -> type.getClass().getSimpleName()).orElse("") : "Object";
                 String jsonData = OBJECT_MAPPER.writeValueAsString(array);
                 String key = "Set<" + dataType + ">=" + jsonData;
                 args.add(key);

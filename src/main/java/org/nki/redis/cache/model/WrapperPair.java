@@ -7,7 +7,7 @@ import java.util.List;
  */
 
 
-public class WrapperPair {
+public final class WrapperPair {
     private String methodName;
     private List<Object> params;
 
