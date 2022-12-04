@@ -1,6 +1,8 @@
 package org.nki.redis.cache.utils;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -12,16 +14,16 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
  * Author Neeschal Kissoon created on 04/11/2022
  */
 public class CacheHelper {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static List<Class<?>> findClasses(File directory, String packageName) throws ClassNotFoundException {
         List<Class<?>> classes = new ArrayList<>();
@@ -88,11 +90,35 @@ public class CacheHelper {
         return methods;
     }
 
-    public static String getPattern(JoinPoint joinPoint, Method method) {
+    public static String getPattern(JoinPoint joinPoint, Method method) throws JsonProcessingException {
         List<String> patternBuilder = new ArrayList<>();
         patternBuilder.add(method.getAnnotation(CacheSave.class).group());
         patternBuilder.add(method.getName());
-        patternBuilder.add(Arrays.stream(joinPoint.getArgs()).filter(Objects::nonNull).map(Object::toString).collect(Collectors.joining(",")));
-        return String.join("::", patternBuilder);
+        String pattern = String.join("::", patternBuilder);
+
+        Object[] arguments = joinPoint.getArgs();
+        List<String> args = new ArrayList<>();
+
+        for (Object arg : arguments) {
+            if (arg instanceof List) {
+                List<?> array = (List<?>) arg;
+                String dataType = array.size() > 0 ? array.stream().findFirst().map(type -> type.getClass().getSimpleName()).orElse("") : "Object";
+                String jsonData = OBJECT_MAPPER.writeValueAsString(array);
+                String key = "List<" + dataType + ">=" + jsonData;
+                args.add(key);
+            } else if (arg instanceof Set) {
+                Set<?> array = (Set<?>) arg;
+                String dataType = array.size() > 0 ? array.stream().findFirst().map(type -> type.getClass().getSimpleName()).orElse("") : "Object";
+                String jsonData = OBJECT_MAPPER.writeValueAsString(array);
+                String key = "Set<" + dataType + ">=" + jsonData;
+                args.add(key);
+            } else {
+                String jsonData = OBJECT_MAPPER.writeValueAsString(arg);
+                String key = arg.getClass().getSimpleName() + "=" + jsonData;
+                args.add(key);
+            }
+        }
+
+        return (pattern + "::" + String.join("\\§", args)).replace(", ", ",");
     }
 }
