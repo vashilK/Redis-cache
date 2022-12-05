@@ -7,6 +7,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.nki.redis.cache.annotations.CacheSave;
+import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,8 +15,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -75,19 +78,30 @@ public class CacheHelper {
     }
 
     public static List<Method> getMethodsAnnotatedWith(final Class<?> type, final Class<? extends Annotation> annotation) {
-        final List<Method> methods = new ArrayList<Method>();
-        Class<?> clazz = type;
+        return Optional
+                .ofNullable(type)
+                .map(class0 -> {
+                    Class<?> clazz = class0;
+                    final List<Method> methods = new ArrayList<Method>();
 
-        while (clazz != Object.class) {
-            for (final Method method : clazz.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(annotation)) {
-                    methods.add(method);
-                }
-            }
-            clazz = clazz.getSuperclass();
-        }
+                    while (clazz != Object.class) {
+                        try {
+                            for (final Method method : clazz.getDeclaredMethods()) {
+                                if (method.isAnnotationPresent(annotation)) {
+                                    methods.add(method);
+                                }
+                            }
 
-        return methods;
+                            clazz = clazz.getSuperclass();
+                        } catch (Exception e) {
+                            return methods;
+                        }
+                    }
+
+                    return methods;
+                })
+                .filter(data -> !CollectionUtils.isEmpty(data))
+                .orElse(Collections.emptyList());
     }
 
     public static String getPattern(JoinPoint joinPoint, Method method) throws JsonProcessingException {
