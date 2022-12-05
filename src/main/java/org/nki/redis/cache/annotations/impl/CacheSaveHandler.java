@@ -8,6 +8,7 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -21,6 +22,7 @@ import static org.nki.redis.cache.utils.CacheHelper.getPattern;
  */
 
 @Aspect
+@Component
 public class CacheSaveHandler {
 
     private final ObjectMapper objectMapper;
