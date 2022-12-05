@@ -8,7 +8,7 @@
     <name>Redis-cache</name>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-    <version>1.0.5.1</version>
+    <version>1.0.5.3</version>
     <packaging>jar</packaging>
     <url>https://github.com/vashilK/Redis-cache</url>
     <description>Based on Springboot's implementation of Redis with added functionality.</description>
@@ -63,6 +63,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
             <version>${spring.version}</version>
@@ -76,17 +81,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
-        </dependency>
-        <!--    Aspect-dependencies    -->
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>${aspectJrt.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-            <version>${aspectJweaver.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.velocity</groupId>
