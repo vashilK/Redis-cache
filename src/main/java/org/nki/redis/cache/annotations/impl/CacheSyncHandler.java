@@ -19,7 +19,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
@@ -43,7 +42,6 @@ import static org.nki.redis.cache.utils.CacheHelper.getMethodsAnnotatedWith;
  */
 
 @Aspect
-@Component
 public class CacheSyncHandler implements ApplicationContextAware {
 
     private final RedisTemplate<String, Object> template;
@@ -58,6 +56,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
 
     @AfterReturning(pointcut = "@annotation(org.nki.redis.cache.annotations.CacheSync)")
     public void synchronize(JoinPoint joinPoint) throws NoSuchMethodException, IOException, ClassNotFoundException {
+        logger.warn("CacheSyncHandler invoked...");
         Method method = getMethod(joinPoint);
         String groupName = method.getAnnotation(CacheSync.class).group();
 
