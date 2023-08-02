@@ -9,20 +9,6 @@ Redis-cache is a library built on spring-redis to provide an enhanced method cac
 works at method level by using
 the provided annotations.
 
-```mermaid
-graph LR;
-    A[Method invoked to get data] -->|| B{Method is annotated with @CacheSave?} 
-    B -->|Yes| D(Automatically push value that would be returned with specific parameters to cache.)
-    B -->|No| E[Do nothing.]
-```
-
-```mermaid
-graph TD;
-    A[Method invoked to update datasource] -->|| B{Method is annotated with @CacheSync?} 
-    B -->|Yes| D(Read cache reinvoke all methods with previously used parameters and update cache with fresh values.)
-    B -->|No| E[Do nothing.]
-```
-
 ## Getting Started
 
 To get started with Redis-Cache, first add it as a dependency in your Java project. If you're using Maven, that looks
