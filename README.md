@@ -142,50 +142,9 @@ mvn clean install exec:java
 
 ###
 
-### Aspect Trigger
-
-Since this project uses AspectJ to perform actions you will need to add pre-bundled aspects from this repository to
-your project using:
-
-```xml
-
-<plugin>
-    <groupId>org.codehaus.mojo</groupId>
-    <artifactId>aspectj-maven-plugin</artifactId>
-    <version>1.14.0</version>
-    <configuration>
-        <showWeaveInfo>true</showWeaveInfo>
-        <source>11</source>
-        <target>11</target>
-        <Xlint>ignore</Xlint>
-        <complianceLevel>11</complianceLevel>
-        <encoding>UTF-8</encoding>
-        <verbose>true</verbose>
-        <excludes>
-            <exclude>**/*.java</exclude>
-        </excludes>
-        <aspectLibraries>
-            <aspectLibrary>
-                <groupId>com.testing</groupId>
-                <artifactId>redis-cache</artifactId>
-            </aspectLibrary>
-        </aspectLibraries>
-    </configuration>
-    <executions>
-        <execution>
-            <phase>process-sources</phase>
-            <goals>
-                <goal>compile</goal>
-                <goal>test-compile</goal>
-            </goals>
-        </execution>
-    </executions>
-</plugin>
-```
-
 ## Prerequisites
 
-You require AspectJ for this repository to work:
+You require the following dependencies:
 
 ```xml
 
@@ -194,12 +153,6 @@ You require AspectJ for this repository to work:
     <artifactId>spring-data-redis</artifactId>
 </dependency>
 
-<dependency>
-<groupId>org.aspectj</groupId>
-<artifactId>aspectjrt</artifactId>
-<version>1.9.7</version>
-<scope>runtime</scope>
-</dependency>
 ```
 
 ## Compilation issues
