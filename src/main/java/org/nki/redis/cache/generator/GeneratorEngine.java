@@ -37,12 +37,7 @@ public final class GeneratorEngine {
                 String replacement = entry.getValue();
                 template = template.replace(target, replacement);
             }
-
-//            String updatedTemplate = Optional
-//                    .of(parameters)
-//                    .filter(GeneratorEngine::validateParameters)
-//                    .map(params -> )
-//                    .orElse(template)
+            
             String packageRoot = Objects.nonNull(parameters.get("packageName")) ? parameters.get("packageName").replace(".", "/") + "/" : "";
             generateDirectories(packageRoot);
             Writer writer = new FileWriter(new File(getProjectPath() + "/target/generated-sources/main/java/" + packageRoot + fileName + "TypeReference." + extension));
