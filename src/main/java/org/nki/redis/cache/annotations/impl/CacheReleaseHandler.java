@@ -31,7 +31,7 @@ public class CacheReleaseHandler {
     }
 
 
-    @Before(value = "@annotation(org.nki.redis.cache.annotations.CacheRelease)")
+    @Before("@annotation(org.nki.redis.cache.annotations.CacheRelease)")
     public void releaseCache(JoinPoint joinPoint) throws NoSuchMethodException {
         Method method = getMethod(joinPoint);
         CacheRelease annotation = method.getAnnotation(CacheRelease.class);

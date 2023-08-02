@@ -58,6 +58,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
 
     @AfterReturning(pointcut = "@annotation(org.nki.redis.cache.annotations.CacheSync)")
     public void synchronize(JoinPoint joinPoint) throws NoSuchMethodException, IOException, ClassNotFoundException {
+        logger.warn("CacheSyncHandler invoked...");
         Method method = getMethod(joinPoint);
         String groupName = method.getAnnotation(CacheSync.class).group();
 

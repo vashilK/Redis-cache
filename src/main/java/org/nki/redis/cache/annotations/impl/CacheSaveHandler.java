@@ -7,6 +7,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -27,14 +29,16 @@ public class CacheSaveHandler {
 
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final Logger logger = LoggerFactory.getLogger(CacheSaveHandler.class);
 
     public CacheSaveHandler(ObjectMapper objectMapper, RedisTemplate<String, Object> redisTemplate) {
         this.objectMapper = objectMapper;
         this.redisTemplate = redisTemplate;
     }
 
-    @Around(value = "@annotation(org.nki.redis.cache.annotations.CacheSave)")
+    @Around(value = "(@annotation(org.nki.redis.cache.annotations.CacheSave))")
     public Object fetchCache(ProceedingJoinPoint joinPoint) throws NoSuchMethodException, JsonProcessingException {
+        logger.warn("CacheSaveHandler invoked...");
         Method method = getMethod(joinPoint);
         String pattern = getPattern(joinPoint, method);
 
