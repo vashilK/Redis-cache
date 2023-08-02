@@ -56,7 +56,8 @@
         <fasterxml.version>2.14.0</fasterxml.version>
         <slf4j.version>2.0.4</slf4j.version>
         <spring.version>2.7.4</spring.version>
-        <aspectj.version>1.9.7</aspectj.version>
+        <spring.aop.version>5.2.3.RELEASE</spring.aop.version>
+        <aspectj.version>1.9.9.1</aspectj.version>
         <junit5.version>5.9.1</junit5.version>
     </properties>
 
@@ -66,6 +67,12 @@
             <artifactId>spring-data-redis</artifactId>
             <version>${spring.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aop</artifactId>
+            <version>${spring.aop.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -80,7 +87,6 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>${aspectj.version}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -109,29 +115,6 @@
                     <target>11</target>
                     <useIncrementalCompilation>false</useIncrementalCompilation>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.14.0</version>
-                <configuration>
-                    <showWeaveInfo>true</showWeaveInfo>
-                    <source>11</source>
-                    <target>11</target>
-                    <Xlint>ignore</Xlint>
-                    <complianceLevel>11</complianceLevel>
-                    <encoding>UTF-8</encoding>
-                    <verbose>true</verbose>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>test-compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

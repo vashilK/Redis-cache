@@ -10,11 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Author Neeschal Kissoon created on 17/12/2022
  */
-public class GeneratorEngine {
+public final class GeneratorEngine {
 
     private GeneratorEngine() {
     }
@@ -37,6 +38,11 @@ public class GeneratorEngine {
                 template = template.replace(target, replacement);
             }
 
+//            String updatedTemplate = Optional
+//                    .of(parameters)
+//                    .filter(GeneratorEngine::validateParameters)
+//                    .map(params -> )
+//                    .orElse(template)
             String packageRoot = Objects.nonNull(parameters.get("packageName")) ? parameters.get("packageName").replace(".", "/") + "/" : "";
             generateDirectories(packageRoot);
             Writer writer = new FileWriter(new File(getProjectPath() + "/target/generated-sources/main/java/" + packageRoot + fileName + "TypeReference." + extension));
@@ -62,11 +68,13 @@ public class GeneratorEngine {
         return absolutePath[0];
     }
 
-    private static void validateParameters(HashMap<String, String> parameters) {
+    private static boolean validateParameters(HashMap<String, String> parameters) {
         try {
             parameters.get("packageName");
         } catch (Exception e) {
             throw new RuntimeException("Error, required parameter packageName missing...");
         }
+
+        return true;
     }
 }

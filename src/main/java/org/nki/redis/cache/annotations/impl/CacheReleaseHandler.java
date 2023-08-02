@@ -6,6 +6,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.nki.redis.cache.annotations.CacheRelease;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.lang.reflect.Method;
@@ -20,6 +21,7 @@ import static org.nki.redis.cache.utils.CacheHelper.getMethod;
  */
 
 @Aspect
+@Component
 public class CacheReleaseHandler {
 
     private final RedisTemplate<String, Object> redisTemplate;
