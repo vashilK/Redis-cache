@@ -18,7 +18,7 @@ public class Transformer {
                     Boolean.class, Byte.class, Short.class,
                     String.class);
 
-    public static Object cast(Class<?> rawType, Object val) {
+    public static <T> Object cast(Class<T> rawType, Object val) {
         if (rawType == Integer.class) {
             return Integer.valueOf((String) val);
         }

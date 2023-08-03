@@ -39,7 +39,8 @@ public final class GeneratorEngine {
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 String target = entry.getKey();
                 String replacement = entry.getValue();
-                template = template.replace(target, replacement);
+                String temp = template.replace(target, replacement);
+                template = temp;
             }
 
             String packageRoot = Objects.nonNull(parameters.get("packageName")) ?
@@ -60,7 +61,7 @@ public final class GeneratorEngine {
         File theDir =
                 new File(getProjectPath() + "/target/generated-sources/main/java/" + packageRoot);
         if (!theDir.exists()) {
-            boolean created = theDir.mkdirs();
+            boolean isCreated = theDir.mkdirs();
         }
     }
 
