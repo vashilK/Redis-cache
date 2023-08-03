@@ -20,16 +20,13 @@ import java.util.stream.Collectors;
  */
 public class ModelGenerator {
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) 
+            throws IOException, ClassNotFoundException {
         List<Class<?>> classes = CacheHelper.getAllClasses();
 
         List<Class<?>> classesWithAnnotations = classes
                 .stream()
-                .filter(clazz ->
-                        Arrays.stream(clazz.getAnnotations())
-                              .anyMatch(annotation ->
-                                      Objects.equals(annotation.annotationType(),
-                                              RedisCacheSerializable.class)))
+                .filter(ModelGenerator::findAnnotation)
                 .distinct()
                 .collect(Collectors.toList());
 
@@ -52,7 +49,17 @@ public class ModelGenerator {
         });
     }
 
-    protected static void generateTypeReferenceObj(String packageName, String modelName, String classLocation, String dataStructure)
+    private static boolean findAnnotation(Class<?> clazz) {
+        return Arrays.stream(clazz.getAnnotations())
+                     .anyMatch(annotation ->
+                             Objects.equals(annotation.annotationType(),
+                                     RedisCacheSerializable.class));
+    }
+
+    protected static void generateTypeReferenceObj(String packageName,
+                                                   String modelName,
+                                                   String classLocation,
+                                                   String dataStructure)
             throws IOException {
         GeneratorEngine generatorEngine = GeneratorEngine.init();
         GeneratorContext context = new GeneratorContext();
@@ -64,8 +71,8 @@ public class ModelGenerator {
         context.put("className", (modelName + dataStructure + "TypeReference"));
         context.put("dataStructure", dataStructure);
         context.put("classLocation", classLocation + "." + modelName);
-        context.put("type", "TypeReference<" + dataStructure + "<" + modelName + ">>");
-        context.put("gtype", "TypeReference<" + dataStructure + "<" + modelName + ">>");
+        context.put("type", buildPlaceholder(dataStructure, modelName));
+        context.put("gtype", buildPlaceholder(dataStructure, modelName));
 
         InputStream inputStream =
                 ModelGenerator
@@ -75,11 +82,16 @@ public class ModelGenerator {
         String data = readFromInputStream(inputStream);
         generatorEngine.create(data, context, (modelName + dataStructure), "java");
     }
+    
+    private static String buildPlaceholder(String param1, String param2){
+        return "TypeReference<" + param1 + "<" + param2 + ">>";
+    }
 
     private static String readFromInputStream(InputStream inputStream) 
             throws IOException {
         StringBuilder resultStringBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+        try (BufferedReader br = 
+                     new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = br.readLine()) != null) {
                 resultStringBuilder.append(line).append("\n");

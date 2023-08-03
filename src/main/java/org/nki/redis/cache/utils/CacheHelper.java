@@ -28,7 +28,8 @@ public class CacheHelper {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private static List<Class<?>> findClasses(File directory, String packageName)
+    private static List<Class<?>> findClasses(File directory,
+                                              String packageName)
             throws ClassNotFoundException {
         List<Class<?>> classes = new ArrayList<>();
         if (!directory.exists()) {
@@ -39,21 +40,21 @@ public class CacheHelper {
         for (File file : files) {
             if (file.isDirectory()) {
                 assert !file.getName().contains(".");
-                classes.addAll(findClasses(file, packageName + "." + file.getName()));
+                classes.addAll(findClasses(file, packageName + "." 
+                        + file.getName()));
             } else if (file.getName().endsWith(".class")) {
                 String root = packageName.substring(1);
-                classes.add(Class.forName(
-                        root + '.' +
-                                file.getName().substring(0, file.getName().length() - 6)));
+                classes.add(Class.forName(root + '.' + getSubstring(file)));
             }
         }
 
         return classes;
     }
 
-
-    public static List<Class<?>> getAllClasses() throws IOException, ClassNotFoundException {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+    public static List<Class<?>> getAllClasses() 
+            throws IOException, ClassNotFoundException {
+        ClassLoader classLoader = 
+                Thread.currentThread().getContextClassLoader();
         Enumeration<URL> resources = classLoader.getResources("./");
         List<File> dirs = new ArrayList<File>();
         while (resources.hasMoreElements()) {
@@ -70,7 +71,8 @@ public class CacheHelper {
     }
 
 
-    public static Method getMethod(JoinPoint joinPoint) throws NoSuchMethodException {
+    public static Method getMethod(JoinPoint joinPoint) 
+            throws NoSuchMethodException {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         return joinPoint
                 .getTarget()
@@ -79,13 +81,15 @@ public class CacheHelper {
                         signature.getMethod().getParameterTypes());
     }
 
-    public static Method getMethod(ProceedingJoinPoint joinPoint) throws NoSuchMethodException {
+    public static Method getMethod(ProceedingJoinPoint joinPoint) 
+            throws NoSuchMethodException {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         return joinPoint.getTarget().getClass().getMethod(signature.getMethod().getName(),
                 signature.getMethod().getParameterTypes());
     }
 
-    public static List<Method> getMethodsAnnotatedWith(final Class<?> type, final Class<? extends Annotation> annotation) {
+    public static List<Method> getMethodsAnnotatedWith(final Class<?> type,
+            final Class<? extends Annotation> annotation) {
         return Optional
                 .ofNullable(type)
                 .map(class0 -> {
@@ -94,13 +98,7 @@ public class CacheHelper {
 
                     while (clazz != Object.class) {
                         try {
-                            for (final Method method : clazz.getDeclaredMethods()) {
-                                if (method.isAnnotationPresent(annotation)) {
-                                    methods.add(method);
-                                }
-                            }
-
-                            clazz = clazz.getSuperclass();
+                            clazz = getClass(annotation, clazz, methods);
                         } catch (Exception e) {
                             return methods;
                         }
@@ -110,6 +108,18 @@ public class CacheHelper {
                 })
                 .filter(data -> !CollectionUtils.isEmpty(data))
                 .orElse(Collections.emptyList());
+    }
+
+    private static Class<?> getClass(Class<? extends Annotation> annotation,
+                                     Class<?> clazz, List<Method> methods) {
+        for (final Method method : clazz.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(annotation)) {
+                methods.add(method);
+            }
+        }
+
+        clazz = clazz.getSuperclass();
+        return clazz;
     }
 
     public static String getPattern(JoinPoint joinPoint, Method method)
@@ -153,5 +163,9 @@ public class CacheHelper {
         }
 
         return (pattern + "::" + String.join("\\§", args)).replace(", ", ",");
+    }
+
+    private static String getSubstring(File file) {
+        return file.getName().substring(0, file.getName().length() - 6);
     }
 }

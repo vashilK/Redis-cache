@@ -212,7 +212,8 @@ public class CacheSyncHandler implements ApplicationContextAware {
                 methodInvocation.getMethod().getParameterTypes());
     }
 
-    private List<Object> getParameters(Map.Entry<String, List<WrapperPair>> methodParam){
+    private List<Object> getParameters
+            (Map.Entry<String, List<WrapperPair>> methodParam){
         return methodParam.getValue()
                           .stream()
                           .flatMap(item -> item.getParams().stream())

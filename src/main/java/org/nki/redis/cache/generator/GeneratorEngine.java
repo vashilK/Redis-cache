@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -29,7 +30,8 @@ public final class GeneratorEngine {
     public void create(String template, GeneratorContext generatorContext,
                        String fileName, String extension) {
         try {
-            HashMap<String, String> parameters = generatorContext.getParameters();
+            HashMap<String, String> parameters = 
+                    generatorContext.getParameters();
             if (parameters.isEmpty()) {
                 throw new ValidationException("Parameters are required!");
             }
@@ -38,8 +40,7 @@ public final class GeneratorEngine {
             for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 String target = entry.getKey();
                 String replacement = entry.getValue();
-                String temp = template.replace(target, replacement);
-                template = temp;
+                template = template.replace(target, replacement);
             }
 
             String packageRoot = Objects.nonNull(parameters.get("packageName")) 
@@ -64,23 +65,26 @@ public final class GeneratorEngine {
                         "/target/generated-sources/main/java/" +
                         packageRoot);
         if (!theDir.exists()) {
-            boolean isCreated = theDir.mkdirs();
+            boolean isPerformed = theDir.mkdirs();
         }
     }
 
     private static String getProjectPath() {
-        String path = Objects.requireNonNull(ModelGenerator.class.getClassLoader().getResource(""))
-                             .getPath();
+        String path = Objects.requireNonNull(getResource()).getPath();
         String fullPath = URLDecoder.decode(path, StandardCharsets.UTF_8);
         String[] absolutePath = fullPath.split("target");
         return absolutePath[0];
+    }
+
+    private static URL getResource() {
+        return ModelGenerator.class.getClassLoader().getResource("");
     }
 
     private static boolean validateParameters(HashMap<String, String> parameters) {
         try {
             parameters.get("packageName");
         } catch (Exception e) {
-            throw new ValidationException("Error, required parameter packageName missing...");
+            throw new ValidationException("Required packageName missing.");
         }
 
         return true;
