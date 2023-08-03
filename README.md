@@ -163,13 +163,12 @@ mvn clean install exec:java
 ```
 Once command run you should be able ot see all TypeReference classes for classes annotated with
 @RedisCacheSerializable in target > generated-sources > main > java
-There classes are really important for serializing and deserializing your data objects in cache correctly.
+There classes are really important to serialize and deserialize your objects in cache correctly.
 
 
 ### Spring AOP
 
-Since the aspects are defined inside this library you will need make your Spring project aware of them. We are going to use the annotation based configuration 
-method. Add the following configuration:
+Since the aspects are defined inside this library you will need make your Spring project aware of them. We are going to use the annotation based configuration method. Add the following configuration:
 
 ```java
 @Configuration
