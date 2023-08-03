@@ -1,6 +1,8 @@
 package org.nki.redis.cache.utils;
 
 
+import org.nki.redis.cache.exceptions.DataManipulationException;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -10,8 +12,10 @@ import java.util.List;
  */
 public class Transformer {
 
-    public static final List<Class<?>> rawTypes = Arrays.asList(Integer.class, Double.class, Float.class, Character.class, Long.class, BigDecimal.class,
-            Boolean.class, Byte.class, Short.class, String.class);
+    public static final List<Class<?>> rawTypes =
+            Arrays.asList(Integer.class, Double.class, Float.class, Character.class, Long.class,
+                    BigDecimal.class,
+                    Boolean.class, Byte.class, Short.class, String.class);
 
     public static Object cast(Class<?> rawType, Object val) {
         if (rawType == Integer.class) {
@@ -45,6 +49,6 @@ public class Transformer {
             return BigDecimal.valueOf(Long.parseLong((String) val));
         }
 
-        throw new RuntimeException("Error: data could not be passed to wrapper class.");
+        throw new DataManipulationException("Error: data could not be converted to wrapper class.");
     }
 }

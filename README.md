@@ -22,6 +22,28 @@ graph LR
     B -->|No| E[Do nothing.]
 ```
 
+## Prerequisites
+
+You require the following dependencies:
+
+```xml
+
+<dependency>
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-redis</artifactId>
+    <version>2.7.14</version>
+</dependency>
+
+<dependency>
+    <groupId>redis.clients</groupId>
+    <artifactId>jedis</artifactId>
+    <version>3.9.0</version>
+</dependency>
+```
+
+If you decide to upgrade the dependency versions make sure they are compatible with Jedis3 and not Jedis4
+as the paths for classes changed in the new version; the code will fail.
+
 ## Getting Started
 
 To get started with Redis-Cache, first add it as a dependency in your Java project. If you're using Maven, that looks
@@ -139,20 +161,52 @@ command
 ```shell
 mvn clean install exec:java
 ```
+Once command run you should be able ot see all TypeReference classes for classes annotated with
+@RedisCacheSerializable in target > generated-sources > main > java
+There classes are really important for serializing and deserializing your data objects in cache correctly.
 
-###
 
-## Prerequisites
+### Spring AOP
 
-You require the following dependencies:
+Since the aspects are defined inside this library you will need make your Spring project aware of them. We are going to use the annotation based configuration 
+method. Add the following configuration:
 
-```xml
+```java
+@Configuration
+@EnableAspectJAutoProxy
+public class AspectConfig {
 
-<dependency>
-    <groupId>org.springframework.data</groupId>
-    <artifactId>spring-data-redis</artifactId>
-</dependency>
+    private final RedisTemplate<String, Object> template;
+    private final ObjectMapper objectMapper;
 
+    public AspectConfig(RedisTemplate<String, Object> template, ObjectMapper objectMapper) {
+        this.template = template;
+        this.objectMapper = objectMapper;
+    }
+
+    @Bean
+    public CacheSyncHandler cacheSyncHandler() {
+        return new CacheSyncHandler(template, objectMapper);
+    }
+
+    @Bean
+    public CacheSaveHandler cacheSaveHandler() {
+        return new CacheSaveHandler(objectMapper, template);
+    }
+
+    @Bean
+    public CacheReleaseHandler cacheReleaseHandler() {
+        return new CacheReleaseHandler(template);
+    }
+}
+```
+
+## Enable Logging
+If you require details of when the aspects are triggering and the details of the 
+operation, add this to your application.properties file.
+
+```properties
+redis-cache.enable.logs = true
 ```
 
 ## Compilation issues
@@ -163,6 +217,14 @@ intelliJ idea before deployment do the following:
 
 Go to Project Structure, Modules, select AspectJ and check Post-compile weave mode.
 This will ensure ajc runs after Lombok and can see the generated classes.
+
+## Errors connecting to Redis
+Add these to your application.properties file.
+
+```properties
+spring.redis.host = localhost
+spring.redis.port = 6379
+```
 
 ## Contributing
 

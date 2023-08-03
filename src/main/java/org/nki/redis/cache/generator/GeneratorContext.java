@@ -1,5 +1,7 @@
 package org.nki.redis.cache.generator;
 
+import org.nki.redis.cache.exceptions.ValidationException;
+
 import java.util.HashMap;
 
 /**
@@ -18,7 +20,7 @@ public class GeneratorContext {
      */
     public void put(String placeholder, String parameter) {
         if (placeholder.isEmpty() || parameter.isEmpty()) {
-            throw new RuntimeException("Required parameter missing");
+            throw new ValidationException("Required parameter missing");
         }
 
         parameters.put("${" + placeholder + "}", parameter);
