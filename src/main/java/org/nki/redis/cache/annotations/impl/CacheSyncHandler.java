@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static org.nki.redis.cache.utils.CacheHelper.getMethod;
 import static org.nki.redis.cache.utils.CacheHelper.getMethodsAnnotatedWith;
 
 /**
@@ -48,27 +47,33 @@ import static org.nki.redis.cache.utils.CacheHelper.getMethodsAnnotatedWith;
 public class CacheSyncHandler implements ApplicationContextAware {
 
     private final RedisTemplate<String, Object> template;
+
     private final ObjectMapper objectMapper;
+
     private static ApplicationContext applicationContext;
+
     private final Logger logger =
             LoggerFactory.getLogger(CacheSyncHandler.class);
 
     @Value("${redis-cache.enable.logs:false}")
     private boolean isLoggingEnabled;
 
-    public CacheSyncHandler(RedisTemplate<String, Object> template, ObjectMapper objectMapper) {
+    public CacheSyncHandler(RedisTemplate<String, Object> template,
+                            ObjectMapper objectMapper) {
         this.template = template;
         this.objectMapper = objectMapper;
     }
 
     @AfterReturning(pointcut = "@annotation(org.nki.redis.cache.annotations.CacheSync)")
     public void synchronize(JoinPoint joinPoint)
-            throws NoSuchMethodException, java.io.IOException, ClassNotFoundException {
-        Method method = getMethod(joinPoint);
+            throws NoSuchMethodException, java.io.IOException,
+            ClassNotFoundException {
+        Method method = CacheHelper.getMethod(joinPoint);
         String groupName = method.getAnnotation(CacheSync.class).group();
 
         if (isLoggingEnabled) {
-            logger.info("Synchronizing cache with datasource for group {}.", groupName);
+            logger.info("Synchronizing cache with datasource for group {}.",
+                    groupName);
         }
 
         Set<String> redisKeys = template.keys(groupName + "::*");
@@ -76,19 +81,30 @@ public class CacheSyncHandler implements ApplicationContextAware {
 
         List<Method> methods = classes
                 .stream()
-                .flatMap(clazz -> getMethodsAnnotatedWith(clazz, CacheSave.class).stream())
+                .flatMap(clazz ->
+                        getMethodsAnnotatedWith(clazz,
+                                CacheSave.class).stream())
                 .distinct()
                 .collect(Collectors.toList());
 
         if (!CollectionUtils.isEmpty(redisKeys)) {
             Map<String, List<WrapperPair>> params = initParams(redisKeys);
-            List<MethodInvocation> methodInvocations = getMethodInvocations(methods, params);
+            List<MethodInvocation> methodInvocations =
+                    getMethodInvocations(methods, params);
             methodFutureInvocations(redisKeys, methodInvocations);
         }
     }
 
-    private MethodInvocation buildMethodInvocation(Method m0, List<Object> parameters) {
+    private MethodInvocation buildMethodInvocation(Method m0,
+                                                   List<Object> parameters) {
         return new MethodInvocation(m0, parameters);
+    }
+
+    private List<Object> buildObjectFromParams(List<String> params) {
+        return params
+                .stream()
+                .map(this::buildPojo)
+                .collect(Collectors.toList());
     }
 
     private Object buildPojo(String arg) {
@@ -104,17 +120,27 @@ public class CacheSyncHandler implements ApplicationContextAware {
     private Object buildObjects(String arg, String dataStructure) {
         try {
             String[] arguments = arg.split("=");
-            String name = arguments[0].replace(dataStructure + "<", "").replace(">", "");
+            String name = arguments[0]
+                    .replace(dataStructure + "<", "")
+                    .replace(">", "");
             List<Class<?>> classes = CacheHelper.getAllClasses();
             String clazzName =
-                    classes.stream().filter(clazz -> clazz.getSimpleName().equals(name)).findFirst()
-                           .map(Class::getCanonicalName).orElseThrow();
-            Class<?> clazz = Class.forName(clazzName + dataStructure + "TypeReference");
+                    classes.stream()
+                           .filter(clazz -> clazz.getSimpleName().equals(name))
+                           .findFirst()
+                           .map(Class::getCanonicalName)
+                           .orElseThrow();
+            Class<?> clazz = Class.forName(clazzName
+                    + dataStructure
+                    + "TypeReference");
 
             return objectMapper.readValue(arguments[1],
-                    (TypeReference<? super Object>) clazz.getMethod("getType").invoke(Class.forName(
-                            clazzName + dataStructure + "TypeReference")));
-
+                    (TypeReference<? super Object>)
+                            clazz.getMethod("getType")
+                                 .invoke(Class.forName(
+                                         clazzName
+                                                 + dataStructure
+                                                 + "TypeReference")));
         } catch (ClassNotFoundException |
                  java.io.IOException |
                  InvocationTargetException |
@@ -130,7 +156,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
                 .filter(rawType -> arg.contains(rawType.getSimpleName()))
                 .findFirst()
                 .map(rawType -> Exceptions.handle(
-                        () -> objectMapper.readValue(arg.split("=")[1], rawType),
+                        () -> objectMapper.readValue(arg.split("=")[1],rawType),
                         () -> new IoException(IoException.ERROR_JSON_DESERIALIZING)));
 
         if (optObj.isPresent()) {
@@ -139,13 +165,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
             String pojoName = arg.split("=")[0];
             try {
                 List<Class<?>> classes = CacheHelper.getAllClasses();
-                String clazzName =
-                        classes.stream()
-                               .filter(clazz ->
-                                       clazz.getSimpleName().equals(pojoName))
-                               .findFirst()
-                               .map(Class::getCanonicalName)
-                               .orElseThrow();
+                String clazzName = getClazzName(pojoName, classes);
                 Class<?> type = Class.forName(clazzName);
                 return objectMapper.readValue(arg.split("=")[1], type);
             } catch (ClassNotFoundException | java.io.IOException e) {
@@ -154,22 +174,54 @@ public class CacheSyncHandler implements ApplicationContextAware {
         }
     }
 
-    private List<MethodInvocation> getMethodInvocations(List<Method> methods, Map<String, List<WrapperPair>> methodParams) {
+    private static String getClazzName(String name, List<Class<?>> classes) {
+        return classes.stream()
+                      .filter(clazz -> clazz.getSimpleName().equals(name))
+                      .findFirst()
+                      .map(Class::getCanonicalName)
+                      .orElseThrow();
+    }
+
+    public MethodInvocation getMethodInvocation(Method method,
+            Map<String, List<WrapperPair>> methodParams){
+        return methodParams
+                .entrySet()
+                .stream()
+                .filter(methodParam ->
+                        Objects.equals(methodParam.getKey(), method.getName()))
+                .findFirst()
+                .map(methodParam -> buildMethodInvocation(method,
+                        getParameters(methodParam))
+                    )
+                .orElse(null);
+    }
+
+    private List<MethodInvocation> getMethodInvocations(List<Method> methods,
+            Map<String, List<WrapperPair>> methodParams) {
         return methods.stream()
-                      .map(m0 ->
-                              methodParams
-                                      .entrySet()
-                                      .stream()
-                                      .filter(methodParam ->
-                                              Objects.equals(methodParam.getKey(), m0.getName()))
-                                      .findFirst()
-                                      .map(methodParam -> buildMethodInvocation(m0,
-                                              methodParam.getValue().stream()
-                                                         .flatMap(item -> item.getParams().stream())
-                                                         .collect(Collectors.toList())))
-                                      .orElse(null))
+                      .map(m0 -> getMethodInvocation(m0, methodParams))
                       .filter(Objects::nonNull)
                       .collect(Collectors.toList());
+    }
+
+    private static Method getMethod(MethodInvocation methodInvocation,
+                                    Object invocationServiceContext)
+            throws NoSuchMethodException {
+        return invocationServiceContext.getClass().getDeclaredMethod(
+                methodInvocation.getMethod().getName(),
+                methodInvocation.getMethod().getParameterTypes());
+    }
+
+    private List<Object> getParameters(Map.Entry<String, List<WrapperPair>> methodParam){
+        return methodParam.getValue()
+                          .stream()
+                          .flatMap(item -> item.getParams().stream())
+                          .collect(Collectors.toList());
+    }
+
+    private static List<String> getParamsList(String[] args) {
+        return Arrays.stream(args[2].split("\\\\§"))
+                     .collect(Collectors.toList());
     }
 
     private Map<String, List<WrapperPair>> initParams(Set<String> keys) {
@@ -177,10 +229,8 @@ public class CacheSyncHandler implements ApplicationContextAware {
                    .map(value -> {
                        String[] args = value.split("::");
                        List<String> params = args.length > 2 ?
-                               Arrays.stream(args[2].split("\\\\§"))
-                                     .collect(Collectors.toList()) : Collections.emptyList();
-                       List<Object> parameters =
-                               params.stream().map(this::buildPojo).collect(Collectors.toList());
+                               getParamsList(args) : Collections.emptyList();
+                       List<Object> parameters = buildObjectFromParams(params);
 
                        return WrapperPair.of(args[1], parameters);
                    })
@@ -191,9 +241,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
         try {
             Class<?> clazz = methodInvocation.getMethod().getDeclaringClass();
             Object invocationServiceContext = applicationContext.getBean(clazz);
-            Method m0 = invocationServiceContext.getClass().getDeclaredMethod(
-                    methodInvocation.getMethod().getName(),
-                    methodInvocation.getMethod().getParameterTypes());
+            Method m0 = getMethod(methodInvocation, invocationServiceContext);
             if (!CollectionUtils.isEmpty(methodInvocation.getInvocationParams())) {
                 return m0.invoke(invocationServiceContext,
                         methodInvocation.getInvocationParams().toArray());
@@ -206,7 +254,8 @@ public class CacheSyncHandler implements ApplicationContextAware {
         }
     }
 
-    private void methodFutureInvocations(Set<String> redisKeys, List<MethodInvocation> methodInvocations) {
+    private void methodFutureInvocations(Set<String> redisKeys,
+            List<MethodInvocation> methodInvocations) {
         CompletableFuture
                 .supplyAsync(() -> {
                     if (!CollectionUtils.isEmpty(redisKeys)) {
