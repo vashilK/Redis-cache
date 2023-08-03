@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Author Neeschal Kissoon created on 17/12/2022
@@ -43,11 +42,13 @@ public final class GeneratorEngine {
                 template = temp;
             }
 
-            String packageRoot = Objects.nonNull(parameters.get("packageName")) ?
-                    parameters.get("packageName").replace(".", "/") + "/" : "";
+            String packageRoot = Objects.nonNull(parameters.get("packageName")) 
+                    ? parameters.get("packageName").replace(".", "/") + "/" 
+                    : "";
             generateDirectories(packageRoot);
             Writer writer = new FileWriter(new File(
-                    getProjectPath() + "/target/generated-sources/main/java/" + packageRoot +
+                    getProjectPath() + "/target/generated-sources/main/java/" 
+                            + packageRoot +
                             fileName + "TypeReference." + extension));
             writer.append(template);
             writer.flush();
@@ -59,7 +60,9 @@ public final class GeneratorEngine {
 
     private static void generateDirectories(String packageRoot) {
         File theDir =
-                new File(getProjectPath() + "/target/generated-sources/main/java/" + packageRoot);
+                new File(getProjectPath() +
+                        "/target/generated-sources/main/java/" +
+                        packageRoot);
         if (!theDir.exists()) {
             boolean isCreated = theDir.mkdirs();
         }

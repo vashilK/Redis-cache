@@ -46,9 +46,9 @@ public class CacheSaveHandler {
     @Around(value = "(@annotation(org.nki.redis.cache.annotations.CacheSave))")
     public Object fetchCache(ProceedingJoinPoint joinPoint) {
         Method method =
-                Exceptions.handleException(() -> getMethod(joinPoint),
+                Exceptions.handle(() -> getMethod(joinPoint),
                         NoSuchMethodException::new);
-        String pattern = Exceptions.handleException(() -> getPattern(joinPoint, method),
+        String pattern = Exceptions.handle(() -> getPattern(joinPoint, method),
                 () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
 
         return Optional
@@ -83,9 +83,9 @@ public class CacheSaveHandler {
     @AfterReturning(pointcut = "@annotation(org.nki.redis.cache.annotations.CacheSave)", returning = "result")
     public void persisResult(JoinPoint joinPoint, Object result) {
         Method method =
-                Exceptions.handleException(() -> getMethod(joinPoint),
+                Exceptions.handle(() -> getMethod(joinPoint),
                         NoSuchMethodException::new);
-        String pattern = Exceptions.handleException(() -> getPattern(joinPoint, method),
+        String pattern = Exceptions.handle(() -> getPattern(joinPoint, method),
                 () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
 
         if (isLoggingEnabled) {
@@ -94,7 +94,7 @@ public class CacheSaveHandler {
         }
 
         redisTemplate.opsForValue().set(pattern,
-                Exceptions.handleException(() -> objectMapper.writeValueAsString(result),
+                Exceptions.handle(() -> objectMapper.writeValueAsString(result),
                         () -> new IoException(IoException.ERROR_JSON_DESERIALIZING)));
 
     }

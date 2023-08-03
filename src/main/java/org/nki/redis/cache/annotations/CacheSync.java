@@ -15,7 +15,8 @@ public @interface CacheSync {
 
     /**
      * Name of group which will encapsulate all the related methods
-     * which point to the same database resource. i.e: Entity name would be a good fit
+     * which point to the same database resource. i.e: 
+     * Entity name would be a good fit
      * for a group name.
      */
     String group() default "";

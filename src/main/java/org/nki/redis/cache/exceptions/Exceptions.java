@@ -8,15 +8,8 @@ import java.util.function.Supplier;
  */
 public class Exceptions {
 
-    public static <T, E extends RuntimeException> Object handle(Callable<T> callable, Supplier<E> exception) {
-        try {
-            return callable.call();
-        } catch (Exception e) {
-            throw exception.get();
-        }
-    }
-
-    public static <T,E extends RuntimeException> T handleException(Callable<T> callable, Supplier<E> exception) {
+    public static <T, E extends RuntimeException> T handle(Callable<T> callable,
+            Supplier<E> exception) {
         try {
             return callable.call();
         } catch (Throwable ex) {

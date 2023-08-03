@@ -140,8 +140,12 @@ public class CacheSyncHandler implements ApplicationContextAware {
             try {
                 List<Class<?>> classes = CacheHelper.getAllClasses();
                 String clazzName =
-                        classes.stream().filter(clazz -> clazz.getSimpleName().equals(pojoName))
-                               .findFirst().map(Class::getCanonicalName).orElseThrow();
+                        classes.stream()
+                               .filter(clazz ->
+                                       clazz.getSimpleName().equals(pojoName))
+                               .findFirst()
+                               .map(Class::getCanonicalName)
+                               .orElseThrow();
                 Class<?> type = Class.forName(clazzName);
                 return objectMapper.readValue(arg.split("=")[1], type);
             } catch (ClassNotFoundException | java.io.IOException e) {
@@ -229,7 +233,8 @@ public class CacheSyncHandler implements ApplicationContextAware {
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
         CacheSyncHandler.applicationContext = applicationContext;
     }
 }
