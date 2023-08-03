@@ -50,7 +50,8 @@ public class CacheSyncHandler implements ApplicationContextAware {
     private final RedisTemplate<String, Object> template;
     private final ObjectMapper objectMapper;
     private static ApplicationContext applicationContext;
-    private final Logger logger = LoggerFactory.getLogger(CacheSyncHandler.class);
+    private final Logger logger =
+            LoggerFactory.getLogger(CacheSyncHandler.class);
 
     @Value("${redis-cache.enable.logs:false}")
     private boolean isLoggingEnabled;
@@ -155,8 +156,8 @@ public class CacheSyncHandler implements ApplicationContextAware {
                               methodParams
                                       .entrySet()
                                       .stream()
-                                      .filter(methodParam -> Objects.equals(methodParam.getKey(),
-                                              m0.getName()))
+                                      .filter(methodParam ->
+                                              Objects.equals(methodParam.getKey(), m0.getName()))
                                       .findFirst()
                                       .map(methodParam -> buildMethodInvocation(m0,
                                               methodParam.getValue().stream()
@@ -171,9 +172,9 @@ public class CacheSyncHandler implements ApplicationContextAware {
         return keys.stream()
                    .map(value -> {
                        String[] args = value.split("::");
-                       List<String> params = args.length > 2 ? Arrays.stream(args[2].split("\\\\§"))
-                                                                     .collect(
-                                                                             Collectors.toList()) : Collections.emptyList();
+                       List<String> params = args.length > 2 ?
+                               Arrays.stream(args[2].split("\\\\§"))
+                                     .collect(Collectors.toList()) : Collections.emptyList();
                        List<Object> parameters =
                                params.stream().map(this::buildPojo).collect(Collectors.toList());
 

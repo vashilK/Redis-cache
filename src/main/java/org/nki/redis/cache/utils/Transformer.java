@@ -13,9 +13,10 @@ import java.util.List;
 public class Transformer {
 
     public static final List<Class<?>> rawTypes =
-            Arrays.asList(Integer.class, Double.class, Float.class, Character.class, Long.class,
-                    BigDecimal.class,
-                    Boolean.class, Byte.class, Short.class, String.class);
+            Arrays.asList(Integer.class, Double.class, Float.class,
+                    Character.class, Long.class, BigDecimal.class,
+                    Boolean.class, Byte.class, Short.class,
+                    String.class);
 
     public static Object cast(Class<?> rawType, Object val) {
         if (rawType == Integer.class) {

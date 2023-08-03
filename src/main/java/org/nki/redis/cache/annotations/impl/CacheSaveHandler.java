@@ -32,7 +32,8 @@ public class CacheSaveHandler {
 
     private final ObjectMapper objectMapper;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final Logger logger = LoggerFactory.getLogger(CacheSaveHandler.class);
+    private final Logger logger =
+            LoggerFactory.getLogger(CacheSaveHandler.class);
 
     @Value("${redis-cache.enable.logs:false}")
     private boolean isLoggingEnabled;
@@ -45,7 +46,8 @@ public class CacheSaveHandler {
     @Around(value = "(@annotation(org.nki.redis.cache.annotations.CacheSave))")
     public Object fetchCache(ProceedingJoinPoint joinPoint) {
         Method method =
-                Exceptions.handleException(() -> getMethod(joinPoint), NoSuchMethodException::new);
+                Exceptions.handleException(() -> getMethod(joinPoint),
+                        NoSuchMethodException::new);
         String pattern = Exceptions.handleException(() -> getPattern(joinPoint, method),
                 () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
 
@@ -54,11 +56,13 @@ public class CacheSaveHandler {
                 .map(Object::toString)
                 .map(results -> {
                     if (isLoggingEnabled) {
-                        logger.info("Invoking data for method {} from cache.", method.getName());
+                        logger.info("Invoking data for method {} from cache.",
+                                method.getName());
                     }
 
                     Class<?> returnType = method.getReturnType();
-                    return Exceptions.handle(() -> objectMapper.readValue(results, returnType),
+                    return Exceptions.handle(
+                            () -> objectMapper.readValue(results, returnType),
                             () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
                 }).orElseGet(() -> {
                     try {
@@ -79,12 +83,14 @@ public class CacheSaveHandler {
     @AfterReturning(pointcut = "@annotation(org.nki.redis.cache.annotations.CacheSave)", returning = "result")
     public void persisResult(JoinPoint joinPoint, Object result) {
         Method method =
-                Exceptions.handleException(() -> getMethod(joinPoint), NoSuchMethodException::new);
+                Exceptions.handleException(() -> getMethod(joinPoint),
+                        NoSuchMethodException::new);
         String pattern = Exceptions.handleException(() -> getPattern(joinPoint, method),
                 () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
 
         if (isLoggingEnabled) {
-            logger.info("Saving result for method {} in cache.", method.getName());
+            logger.info("Saving result for method {} in cache.",
+                    method.getName());
         }
 
         redisTemplate.opsForValue().set(pattern,

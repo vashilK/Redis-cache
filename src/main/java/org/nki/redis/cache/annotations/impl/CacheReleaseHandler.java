@@ -28,7 +28,8 @@ import static org.nki.redis.cache.utils.CacheHelper.getMethod;
 public class CacheReleaseHandler {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final Logger logger = LoggerFactory.getLogger(CacheReleaseHandler.class);
+    private final Logger logger = 
+            LoggerFactory.getLogger(CacheReleaseHandler.class);
 
     @Value("${redis-cache.enable.logs:false}")
     private boolean isLoggingEnabled;

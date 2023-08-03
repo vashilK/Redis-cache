@@ -25,17 +25,20 @@ public class ModelGenerator {
 
         List<Class<?>> classesWithAnnotations = classes
                 .stream()
-                .filter(clazz -> Arrays.stream(clazz.getAnnotations()).anyMatch(
-                        annotation -> Objects.equals(annotation.annotationType(),
-                                RedisCacheSerializable.class)))
+                .filter(clazz ->
+                        Arrays.stream(clazz.getAnnotations())
+                              .anyMatch(annotation ->
+                                      Objects.equals(annotation.annotationType(),
+                                              RedisCacheSerializable.class)))
                 .distinct()
                 .collect(Collectors.toList());
 
         classesWithAnnotations.addAll(Transformer.rawTypes);
 
         classesWithAnnotations.forEach(clazz -> {
-            String packageName = (clazz.getPackage().getName()).contains(
-                    "java") ? "org.nki.redis.cache.model" : clazz.getPackage().getName();
+            String packageName = (clazz.getPackage().getName())
+                    .contains("java") ? "org.nki.redis.cache.model" :
+                    clazz.getPackage().getName();
             String modelName = clazz.getSimpleName();
             String classLocation = clazz.getPackage().getName();
 
@@ -65,7 +68,10 @@ public class ModelGenerator {
         context.put("gtype", "TypeReference<" + dataStructure + "<" + modelName + ">>");
 
         InputStream inputStream =
-                ModelGenerator.class.getResourceAsStream("/templates/listTypeReference.txt");
+                ModelGenerator
+                        .class
+                        .getResourceAsStream("/templates/listTypeReference.txt");
+        
         String data = readFromInputStream(inputStream);
         generatorEngine.create(data, context, (modelName + dataStructure), "java");
     }

@@ -43,7 +43,8 @@ public class CacheHelper {
             } else if (file.getName().endsWith(".class")) {
                 String root = packageName.substring(1);
                 classes.add(Class.forName(
-                        root + '.' + file.getName().substring(0, file.getName().length() - 6)));
+                        root + '.' +
+                                file.getName().substring(0, file.getName().length() - 6)));
             }
         }
 
@@ -71,8 +72,11 @@ public class CacheHelper {
 
     public static Method getMethod(JoinPoint joinPoint) throws NoSuchMethodException {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        return joinPoint.getTarget().getClass().getMethod(signature.getMethod().getName(),
-                signature.getMethod().getParameterTypes());
+        return joinPoint
+                .getTarget()
+                .getClass()
+                .getMethod(signature.getMethod().getName(),
+                        signature.getMethod().getParameterTypes());
     }
 
     public static Method getMethod(ProceedingJoinPoint joinPoint) throws NoSuchMethodException {
@@ -121,19 +125,23 @@ public class CacheHelper {
         for (Object arg : arguments) {
             if (arg instanceof List) {
                 List<?> array = (List<?>) arg;
-                String dataType = !array.isEmpty() ? array.stream().findFirst()
-                                                          .map(type -> type.getClass()
-                                                                           .getSimpleName())
-                                                          .orElse("") : "Object";
+                String dataType = !array.isEmpty() ?
+                        array.stream()
+                             .findFirst()
+                             .map(type -> type.getClass().getSimpleName())
+                             .orElse("") : "Object";
+
                 String jsonData = OBJECT_MAPPER.writeValueAsString(array);
                 String key = "List<" + dataType + ">=" + jsonData;
                 args.add(key);
             } else if (arg instanceof Set) {
                 Set<?> array = (Set<?>) arg;
-                String dataType = !array.isEmpty() ? array.stream().findFirst()
-                                                          .map(type -> type.getClass()
-                                                                           .getSimpleName())
-                                                          .orElse("") : "Object";
+                String dataType = !array.isEmpty() ?
+                        array.stream()
+                             .findFirst()
+                             .map(type -> type.getClass().getSimpleName())
+                             .orElse("") : "Object";
+                
                 String jsonData = OBJECT_MAPPER.writeValueAsString(array);
                 String key = "Set<" + dataType + ">=" + jsonData;
                 args.add(key);
