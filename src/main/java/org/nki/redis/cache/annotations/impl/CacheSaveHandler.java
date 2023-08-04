@@ -17,6 +17,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.nki.redis.cache.utils.CacheHelper.getMethod;
@@ -88,14 +89,16 @@ public class CacheSaveHandler {
         String pattern = Exceptions.handle(() -> getPattern(joinPoint, method),
                 () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
 
-        if (isLoggingEnabled) {
-            logger.info("Saving result for method {} in cache.",
-                    method.getName());
+        if (Objects.nonNull(result)) {
+            if (isLoggingEnabled) {
+                logger.info("Saving result for method {} in cache.",
+                        method.getName());
+            }
+            
+            redisTemplate.opsForValue().set(pattern,
+                    Exceptions.handle(() -> objectMapper.writeValueAsString(result),
+                            () -> new IoException(IoException.ERROR_JSON_DESERIALIZING)));
         }
-
-        redisTemplate.opsForValue().set(pattern,
-                Exceptions.handle(() -> objectMapper.writeValueAsString(result),
-                        () -> new IoException(IoException.ERROR_JSON_DESERIALIZING)));
 
     }
 }
