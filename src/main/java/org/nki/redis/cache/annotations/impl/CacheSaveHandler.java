@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
-import java.util.Optional;
 
 import static org.nki.redis.cache.utils.CacheHelper.getMethod;
 import static org.nki.redis.cache.utils.CacheHelper.getPattern;
@@ -39,7 +38,8 @@ public class CacheSaveHandler {
     @Value("${redis-cache.enable.logs:false}")
     private boolean isLoggingEnabled;
 
-    public CacheSaveHandler(ObjectMapper objectMapper, RedisTemplate<String, Object> redisTemplate) {
+    public CacheSaveHandler(ObjectMapper objectMapper,
+                            RedisTemplate<String, Object> redisTemplate) {
         this.objectMapper = objectMapper;
         this.redisTemplate = redisTemplate;
     }
@@ -92,7 +92,7 @@ public class CacheSaveHandler {
                 logger.info("Saving result for method {} in cache.",
                         method.getName());
             }
-            
+
             redisTemplate.opsForValue().set(pattern,
                     Exceptions.handle(() -> objectMapper.writeValueAsString(result),
                             () -> new IoException(IoException.ERROR_JSON_DESERIALIZING)));

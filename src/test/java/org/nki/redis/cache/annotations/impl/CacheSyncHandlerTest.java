@@ -39,12 +39,14 @@ public class CacheSyncHandlerTest {
             "Book::getBookByAuthor::String=\"9\"");
 
     @Test
-    public void buildMethodParamsBuilderWithSingleKey() throws JsonProcessingException {
+    public void buildMethodParamsBuilderWithSingleKey()
+            throws JsonProcessingException {
         when(objectMapper.readValue("\"34\"", String.class)).thenReturn("34");
 
         Map<String, List<WrapperPair>> result = cacheSyncHandler.initParams(singleKeys);
 
-        assertEquals(List.of("34"), result.get("getBookByAuthor").get(0).getParams());
+        assertEquals(List.of("34"),
+                result.get("getBookByAuthor").get(0).getParams());
     }
 
     @Test
@@ -63,7 +65,8 @@ public class CacheSyncHandlerTest {
         when(objectMapper.readValue("\"34\"", String.class)).thenReturn("34");
         when(objectMapper.readValue("\"9\"", String.class)).thenReturn("9");
 
-        Map<String, List<WrapperPair>> methodWrappers = cacheSyncHandler.initParams(multipleKeys);
+        Map<String, List<WrapperPair>> methodWrappers =
+                cacheSyncHandler.initParams(multipleKeys);
         Method method = getMethod(CacheSyncHandlerTest.class, String.class);
 
         List<MethodInvocation> methodInvocations = cacheSyncHandler
@@ -81,7 +84,8 @@ public class CacheSyncHandlerTest {
         String pattern = CacheHelper.getPattern(List.of(dummy).toArray(),
                 method);
 
-        when(objectMapper.readValue(anyString(), eq(DummyDto.class))).thenReturn(dummy);
+        when(objectMapper
+                .readValue(anyString(), eq(DummyDto.class))).thenReturn(dummy);
         Map<String, List<WrapperPair>> methodWrappers =
                 cacheSyncHandler.initParams(Set.of(pattern));
 
@@ -91,13 +95,27 @@ public class CacheSyncHandlerTest {
         assertEquals(dummy, methodInvocations.get(0).invocationParams.get(0));
     }
 
-    private <T, V> Method getMethod(Class<T> clazz, Class<V> param) throws NoSuchMethodException {
+    private <T, V> Method getMethod(Class<T> clazz, Class<V> param)
+            throws NoSuchMethodException {
         return clazz.getDeclaredMethod("getBookByAuthor", param);
     }
 
+    /**
+     * For testing purposes only,
+     * Will be loaded in classloader and invoked.
+     *
+     * @param param
+     */
+    @CacheSave
     private void getBookByAuthor(String param) {
     }
 
+    /**
+     * For testing purposes only,
+     * Will be loaded in classloader and invoked.
+     *
+     * @param dummyDto
+     */
     @CacheSave(group = "Book")
     private void getBookByAuthor(DummyDto dummyDto) {
     }
