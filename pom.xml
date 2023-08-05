@@ -126,16 +126,6 @@
                             <mainClass>org.nki.redis.cache.generator.ModelGenerator</mainClass>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>readme-version-updater</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <mainClass>org.nki.redis.cache.generator.VersionUpdater</mainClass>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
