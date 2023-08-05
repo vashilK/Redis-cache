@@ -21,7 +21,6 @@ public class VersionUpdater {
             MavenXpp3Reader reader = new MavenXpp3Reader();
             Model model = reader.read(new FileReader("pom.xml"));
             String version = model.getVersion();
-            System.out.println("Maven project version: " + version);
             String filePath = "README.md";
 
             try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
