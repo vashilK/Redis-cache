@@ -53,7 +53,7 @@ To get started with Redis-Cache, first add it as a dependency in your Java proje
 <dependency>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-<version>1.0.0-BETA</version> <!-- io.github.vashilk.version -->
+    <version>1.0.0-BETA</version> <!-- io.github.vashilk.version -->
 </dependency>
 ```
 
