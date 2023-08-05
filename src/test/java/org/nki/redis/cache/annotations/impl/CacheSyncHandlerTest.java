@@ -7,8 +7,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.nki.redis.cache.annotations.CacheSave;
+import org.nki.redis.cache.model.DummyDto;
 import org.nki.redis.cache.model.MethodInvocation;
 import org.nki.redis.cache.model.WrapperPair;
+import org.nki.redis.cache.utils.CacheHelper;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -16,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,17 +65,40 @@ public class CacheSyncHandlerTest {
 
         Map<String, List<WrapperPair>> methodWrappers = cacheSyncHandler.initParams(multipleKeys);
         Method method = getMethod(CacheSyncHandlerTest.class, String.class);
-        
+
         List<MethodInvocation> methodInvocations = cacheSyncHandler
                 .getMethodInvocations(List.of(method), methodWrappers);
 
-        assertEquals(2 ,methodInvocations.size());
+        assertEquals(2, methodInvocations.size());
         assertEquals(1, methodInvocations.get(0).getInvocationParams().size());
+    }
+
+    @Test
+    public void buildSinglMethodInvocationWithObjectParamTest()
+            throws NoSuchMethodException, JsonProcessingException {
+        Method method = getMethod(CacheSyncHandlerTest.class, DummyDto.class);
+        DummyDto dummy = new DummyDto("Neeschal", 26);
+        String pattern = CacheHelper.getPattern(List.of(dummy).toArray(),
+                method);
+
+        when(objectMapper.readValue(anyString(), eq(DummyDto.class))).thenReturn(dummy);
+        Map<String, List<WrapperPair>> methodWrappers =
+                cacheSyncHandler.initParams(Set.of(pattern));
+
+        List<MethodInvocation> methodInvocations = cacheSyncHandler
+                .getMethodInvocations(List.of(method), methodWrappers);
+
+        assertEquals(dummy, methodInvocations.get(0).invocationParams.get(0));
     }
 
     private <T, V> Method getMethod(Class<T> clazz, Class<V> param) throws NoSuchMethodException {
         return clazz.getDeclaredMethod("getBookByAuthor", param);
     }
-    
-    private void getBookByAuthor(String param){}
+
+    private void getBookByAuthor(String param) {
+    }
+
+    @CacheSave(group = "Book")
+    private void getBookByAuthor(DummyDto dummyDto) {
+    }
 }

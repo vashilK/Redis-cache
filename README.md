@@ -46,23 +46,21 @@ as the paths for classes changed in the new version; the code will fail.
 
 ## Getting Started
 
-To get started with Redis-Cache, first add it as a dependency in your Java project. If you're using Maven, that looks
-like
-this:
+To get started with Redis-Cache, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
 
 ```xml
 
 <dependency>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-    <version>1.0.5.1</version>
+<version>1.0.0-BETA</version> <!-- io.github.vashilk.version -->
 </dependency>
 ```
 
 For Gradle:
 
 ```kotlin
-implementation("io.github.vashilk:redis-cache:1.0.5.1")
+implementation("io.github.vashilk:redis-cache:1.0.0-BETA")
 ```
 
 Next you will need to connect to your Redis instance
@@ -200,9 +198,18 @@ parameters. No adding the annotation and generating the type classes will result
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.0.0</version>
-            <configuration>
-                <mainClass>org.nki.redis.cache.generator.ModelGenerator</mainClass>
-            </configuration>
+            <executions>
+                <execution>
+                    <id>generate-typeReference-on-compile</id>
+                    <phase>compile</phase>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                    <configuration>
+                        <mainClass>org.nki.redis.cache.generator.ModelGenerator</mainClass>
+                    </configuration>
+                </execution>
+            </executions>
         </plugin>
     </plugins>
 </build>
@@ -211,7 +218,7 @@ parameters. No adding the annotation and generating the type classes will result
 #### command:
 
 ```shell
-mvn clean install exec:java
+mvn clean install
 ```
 Once command run you should be able ot see all TypeReference classes for classes annotated with
 @RedisCacheSerializable in target > generated-sources > main > java
@@ -282,5 +289,3 @@ spring.redis.port = 6379
 This is a completely open source project, it is an idea that came up to me when using Redis in
 one of my projects. All help and collaborations to refine and make this strong solution are welcome you can contact me
 at my [LinkedIn](https://mu.linkedin.com/in/neeschal-kissoon-03ab7516b).
-
-

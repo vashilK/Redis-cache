@@ -25,7 +25,7 @@ import java.util.Set;
  * Author Neeschal Kissoon created on 04/11/2022
  */
 public class CacheHelper {
-
+    
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static List<Class<?>> findClasses(File directory,
@@ -40,7 +40,7 @@ public class CacheHelper {
         for (File file : files) {
             if (file.isDirectory()) {
                 assert !file.getName().contains(".");
-                classes.addAll(findClasses(file, packageName + "." 
+                classes.addAll(findClasses(file, packageName + "."
                         + file.getName()));
             } else if (file.getName().endsWith(".class")) {
                 String root = packageName.substring(1);
@@ -51,9 +51,9 @@ public class CacheHelper {
         return classes;
     }
 
-    public static List<Class<?>> getAllClasses() 
+    public static List<Class<?>> getAllClasses()
             throws IOException, ClassNotFoundException {
-        ClassLoader classLoader = 
+        ClassLoader classLoader =
                 Thread.currentThread().getContextClassLoader();
         Enumeration<URL> resources = classLoader.getResources("./");
         List<File> dirs = new ArrayList<File>();
@@ -71,9 +71,20 @@ public class CacheHelper {
     }
 
 
-    public static Method getMethod(JoinPoint joinPoint) 
+    public static Method getMethod(JoinPoint joinPoint)
             throws NoSuchMethodException {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        return getMethod(joinPoint, signature);
+    }
+
+    public static Method getMethod(ProceedingJoinPoint joinPoint)
+            throws NoSuchMethodException {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        return getMethod(joinPoint, signature);
+    }
+
+    private static Method getMethod(JoinPoint joinPoint, MethodSignature signature)
+            throws NoSuchMethodException {
         return joinPoint
                 .getTarget()
                 .getClass()
@@ -81,15 +92,8 @@ public class CacheHelper {
                         signature.getMethod().getParameterTypes());
     }
 
-    public static Method getMethod(ProceedingJoinPoint joinPoint) 
-            throws NoSuchMethodException {
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        return joinPoint.getTarget().getClass().getMethod(signature.getMethod().getName(),
-                signature.getMethod().getParameterTypes());
-    }
-
     public static List<Method> getMethodsAnnotatedWith(final Class<?> type,
-            final Class<? extends Annotation> annotation) {
+                                                       final Class<? extends Annotation> annotation) {
         return Optional
                 .ofNullable(type)
                 .map(class0 -> {
@@ -124,12 +128,17 @@ public class CacheHelper {
 
     public static String getPattern(JoinPoint joinPoint, Method method)
             throws JsonProcessingException {
+        Object[] arguments = joinPoint.getArgs();
+        return getPattern(arguments, method);
+    }
+
+    public static String getPattern(Object[] arguments, Method method)
+            throws JsonProcessingException {
         List<String> patternBuilder = new ArrayList<>();
         patternBuilder.add(method.getAnnotation(CacheSave.class).group());
         patternBuilder.add(method.getName());
         String pattern = String.join("::", patternBuilder);
 
-        Object[] arguments = joinPoint.getArgs();
         List<String> args = new ArrayList<>();
 
         for (Object arg : arguments) {
@@ -151,7 +160,7 @@ public class CacheHelper {
                              .findFirst()
                              .map(type -> type.getClass().getSimpleName())
                              .orElse("") : "Object";
-                
+
                 String jsonData = OBJECT_MAPPER.writeValueAsString(array);
                 String key = "Set<" + dataType + ">=" + jsonData;
                 args.add(key);

@@ -52,33 +52,31 @@ public class CacheSaveHandler {
         String pattern = Exceptions.handle(() -> getPattern(joinPoint, method),
                 () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
 
-        return Optional
-                .ofNullable(redisTemplate.opsForValue().get(pattern))
-                .map(Object::toString)
-                .map(results -> {
-                    if (isLoggingEnabled) {
-                        logger.info("Invoking data for method {} from cache.",
-                                method.getName());
-                    }
+        Object result = redisTemplate.opsForValue().get(pattern);
+        if (Objects.nonNull(result)) {
+            String toStringObj = result.toString();
+            if (isLoggingEnabled) {
+                logger.info("Invoking data for method {} from cache.",
+                        method.getName());
+            }
 
-                    Class<?> returnType = method.getReturnType();
-                    return Exceptions.handle(
-                            () -> objectMapper.readValue(results, returnType),
-                            () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
-                }).orElseGet(() -> {
-                    try {
-                        if (isLoggingEnabled) {
-                            logger.info(
-                                    "Data not present in cache for method {} invoking datasource.",
-                                    method.getName());
-                        }
+            Class<?> returnType = method.getReturnType();
+            return Exceptions.handle(
+                    () -> objectMapper.readValue(toStringObj, returnType),
+                    () -> new IoException(IoException.ERROR_JSON_DESERIALIZING));
+        } else {
+            try {
+                if (isLoggingEnabled) {
+                    logger.info(
+                            "Data not present in cache for method {} invoking datasource.",
+                            method.getName());
+                }
 
-                        joinPoint.proceed();
-                        return null;
-                    } catch (Throwable e) {
-                        throw new PointCutException(PointCutException.ERROR_RESUMING, e);
-                    }
-                });
+                return joinPoint.proceed();
+            } catch (Throwable e) {
+                throw new PointCutException(PointCutException.ERROR_RESUMING, e);
+            }
+        }
     }
 
     @AfterReturning(pointcut = "@annotation(org.nki.redis.cache.annotations.CacheSave)", returning = "result")

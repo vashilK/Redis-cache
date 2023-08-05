@@ -1,7 +1,6 @@
 package org.nki.redis.cache.annotations.impl;
 
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -96,7 +95,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
     }
 
     protected MethodInvocation buildMethodInvocation(Method m0,
-                                                   List<Object> parameters) {
+                                                     List<Object> parameters) {
         return new MethodInvocation(m0, parameters);
     }
 
@@ -134,13 +133,8 @@ public class CacheSyncHandler implements ApplicationContextAware {
                     + dataStructure
                     + "TypeReference");
 
-            return objectMapper.readValue(arguments[1],
-                    (TypeReference<? super Object>)
-                            clazz.getMethod("getType")
-                                 .invoke(Class.forName(
-                                         clazzName
-                                                 + dataStructure
-                                                 + "TypeReference")));
+            return objectMapper.readValue(arguments[1], Transformer.getClazz(clazz, clazzName,
+                    dataStructure));
         } catch (ClassNotFoundException |
                  java.io.IOException |
                  InvocationTargetException |
@@ -199,7 +193,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
     }
 
     protected List<MethodInvocation> getMethodInvocations(List<Method> methods,
-                                                        Map<String, List<WrapperPair>> methodParams) {
+                                                          Map<String, List<WrapperPair>> methodParams) {
         return methods.stream()
                       .flatMap(m0 -> getMethodInvocation(m0, methodParams).stream())
                       .filter(Objects::nonNull)
@@ -207,19 +201,11 @@ public class CacheSyncHandler implements ApplicationContextAware {
     }
 
     protected static Method getMethod(MethodInvocation methodInvocation,
-                                    Object invocationServiceContext)
+                                      Object invocationServiceContext)
             throws NoSuchMethodException {
         return invocationServiceContext.getClass().getDeclaredMethod(
                 methodInvocation.getMethod().getName(),
                 methodInvocation.getMethod().getParameterTypes());
-    }
-
-    protected List<Object> getParameters
-            (Map.Entry<String, List<WrapperPair>> methodParam) {
-        return methodParam.getValue()
-                          .stream()
-                          .flatMap(item -> item.getParams().stream())
-                          .collect(Collectors.toList());
     }
 
     protected static List<String> getParamsList(String[] args) {
@@ -258,7 +244,7 @@ public class CacheSyncHandler implements ApplicationContextAware {
     }
 
     protected void methodFutureInvocations(Set<String> redisKeys,
-                                         List<MethodInvocation> methodInvocations) {
+                                           List<MethodInvocation> methodInvocations) {
         CompletableFuture
                 .supplyAsync(() -> {
                     if (!CollectionUtils.isEmpty(redisKeys)) {
