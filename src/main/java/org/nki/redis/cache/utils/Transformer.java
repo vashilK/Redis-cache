@@ -1,8 +1,10 @@
 package org.nki.redis.cache.utils;
 
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.nki.redis.cache.exceptions.DataManipulationException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
@@ -51,5 +53,18 @@ public class Transformer {
         }
 
         throw new DataManipulationException("Error: data could not be converted to wrapper class.");
+    }
+
+    public static <T extends TypeReference<? super Object>> T getClazz(
+            Class<?> clazz, String clazzName,
+            String dataStructure)
+            throws ClassNotFoundException, NoSuchMethodException,
+            InvocationTargetException, IllegalAccessException {
+        return (T)
+                clazz.getMethod("getType")
+                     .invoke(Class.forName(
+                             clazzName
+                                     + dataStructure
+                                     + "TypeReference"));
     }
 }

@@ -11,3 +11,5 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar.iml
 redis-cache.iml
+/MAVEN_DEPENDENCY.md
+/src/main/java/org/nki/redis/cache/generator/VersionUpdater.java

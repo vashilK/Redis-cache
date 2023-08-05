@@ -46,23 +46,21 @@ as the paths for classes changed in the new version; the code will fail.
 
 ## Getting Started
 
-To get started with Redis-Cache, first add it as a dependency in your Java project. If you're using Maven, that looks
-like
-this:
+To get started with Redis-Cache, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
 
 ```xml
 
 <dependency>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-    <version>1.0.5.1</version>
+<version>1.0.0-BETA</version> <!-- io.github.vashilk.version -->
 </dependency>
 ```
 
 For Gradle:
 
 ```kotlin
-implementation("io.github.vashilk:redis-cache:1.0.5.1")
+implementation("io.github.vashilk:redis-cache:1.0.0-BETA")
 ```
 
 Next you will need to connect to your Redis instance
@@ -99,16 +97,45 @@ public class RedisConfig {
 You can use your own connection to have access to a Redis-cluster with multiple redis-instances but
 make sure the implementation beneath uses RedisTemplate for the annotation to work properly.
 
-Next you will use custom annotations:
+## Annotations
 
 ```java
 @CacheSave(group = "group-name")
 ```
-
 Any method annotated with the one above will be cached. Designed to be used on methods that return data, specifically
-for
-heavily used ones with similar parameters.
+for heavily used ones with similar parameters.
+####
+Using annotation:
 
+```java
+import org.nki.redis.cache.annotations.CacheSave;
+
+@CacheSave(group = "Book")
+public Book getBookById(Long id){
+    // do something
+}
+```
+The method above will be cache under the group "Book".
+###
+```java
+@CacheRelease(group = "group-name")
+```
+
+Works as a cache eviction, any method annotated with this will clear a whole group cached with the same group-name
+before the method runs.
+####
+Using annotation:
+
+```java
+import org.nki.redis.cache.annotations.CacheRelease;
+
+@CacheRelease(group = "Book")
+public void resetCacheForBooks(){
+    // do something
+}
+```
+The method above once invoked will clear every entry in the cache for the group "Book";
+###
 ```java
 @CacheSync(group = "group-name")
 ```
@@ -117,28 +144,51 @@ Methods annotated with the one above will trigger a synchronization of data for 
 annotated with @CacheSave with the same 'group-name'. This annotation is designed to be used on methods
 which modify the datasource from where you are querying but can be also used in events where you wish to
 manually trigger a synchronization.
+####
+Using annotation:
 
 ```java
-@CacheRelease(group = "group-name")
+import org.nki.redis.cache.annotations.CacheSync;
+
+@CacheSync(group = "Book")
+public void saveBooks(List<Book> books){
+    // do something
+}
 ```
-
-Works as a cache eviction, any method annotated with this will clear a whole group cached with the same group-name
-before the method runs. With this everytime the method is run it will push new data to the cache.
-
+Once a method annotated with @CacheSync is invoked it will clear the cache for the
+group "Book" and reinvoke all the methods with parameters cached updating all the values in the cache,
+hence keeping the cache and data-source synchronized at all times for the group "Book".
 ###
 
 ### Model
 
-This tool serializes and deserializes models you use with your data-source, in order for it to work properly you need to
+This tool serializes and deserializes models you use in your method constructors, in order for it to work properly you need to
 annotate the models you wish to be cached with:
 
 ```java
 @RedisCacheSerializable
 ```
 
-To generate the models that this tool requires please add this plugin to your pom and use this command:
+Using annotation with the Object:
+```java
+@Data
+@RedisCacheSerializable
+public class MyClass {
+    private String name;
+    private Boolean isAllowed;
+}
+```
 
-pom.xml
+Using the object in method:
+```java
+public void save(MyClass myClass){
+    // do something
+}
+```
+Using it this way will allow easy serialization & deserialization of the object as method
+parameters. No adding the annotation and generating the type classes will result in code failure.
+
+#### To generate the models that this tool requires please add this plugin to your pom and use this command:
 
 ```xml
 
@@ -148,25 +198,34 @@ pom.xml
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>exec-maven-plugin</artifactId>
             <version>3.0.0</version>
-            <configuration>
-                <mainClass>org.nki.redis.cache.generator.ModelGenerator</mainClass>
-            </configuration>
+            <executions>
+                <execution>
+                    <id>generate-typeReference-on-compile</id>
+                    <phase>compile</phase>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                    <configuration>
+                        <mainClass>org.nki.redis.cache.generator.ModelGenerator</mainClass>
+                    </configuration>
+                </execution>
+            </executions>
         </plugin>
     </plugins>
 </build>
 ```
 
-command
+#### command:
 
 ```shell
-mvn clean install exec:java
+mvn clean install
 ```
 Once command run you should be able ot see all TypeReference classes for classes annotated with
 @RedisCacheSerializable in target > generated-sources > main > java
 There classes are really important to serialize and deserialize your objects in cache correctly.
 
 
-### Spring AOP
+### Spring AOP config
 
 Since the aspects are defined inside this library you will need make your Spring project aware of them. We are going to use the annotation based configuration method. Add the following configuration:
 
@@ -230,5 +289,3 @@ spring.redis.port = 6379
 This is a completely open source project, it is an idea that came up to me when using Redis in
 one of my projects. All help and collaborations to refine and make this strong solution are welcome you can contact me
 at my [LinkedIn](https://mu.linkedin.com/in/neeschal-kissoon-03ab7516b).
-
-
