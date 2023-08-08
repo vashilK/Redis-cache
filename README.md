@@ -22,25 +22,6 @@ graph LR
     B -->|No| E[Do nothing.]
 ```
 
-## Prerequisites
-
-You require the following dependencies:
-
-```xml
-
-<dependency>
-    <groupId>org.springframework.data</groupId>
-    <artifactId>spring-data-redis</artifactId>
-    <version>2.7.14</version>
-</dependency>
-
-<dependency>
-    <groupId>redis.clients</groupId>
-    <artifactId>jedis</artifactId>
-    <version>3.9.0</version>
-</dependency>
-```
-
 If you decide to upgrade the dependency versions make sure they are compatible with Jedis3 and not Jedis4
 as the paths for classes changed in the new version; the code will fail.
 
@@ -53,7 +34,7 @@ To get started with Redis-Cache, first add it as a dependency in your Java proje
 <dependency>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-    <version>1.0.6-BETA</version> <!-- io.github.vashilk.version -->
+    <version>1.0.6.1-BETA</version>
 </dependency>
 ```
 
@@ -61,7 +42,7 @@ For Gradle:
 
 ```kotlin
 
-implementation("io.github.vashilk:redis-cache:1.0.6-BETA")
+implementation("io.github.vashilk:redis-cache:1.0.6.1-BETA")
 ```
 
 Next you will need to connect to your Redis instance
