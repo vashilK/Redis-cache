@@ -22,9 +22,6 @@ graph LR
     B -->|No| E[Do nothing.]
 ```
 
-If you decide to upgrade the dependency versions make sure they are compatible with Jedis3 and not Jedis4
-as the paths for classes changed in the new version; the code will fail.
-
 ## Getting Started
 
 To get started with Redis-Cache, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
