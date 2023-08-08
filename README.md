@@ -53,14 +53,15 @@ To get started with Redis-Cache, first add it as a dependency in your Java proje
 <dependency>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-    <version>1.0.0-BETA</version> <!-- io.github.vashilk.version -->
+    <version>1.0.6-BETA</version> <!-- io.github.vashilk.version -->
 </dependency>
 ```
 
 For Gradle:
 
 ```kotlin
-implementation("io.github.vashilk:redis-cache:1.0.0-BETA")
+
+implementation("io.github.vashilk:redis-cache:1.0.6-BETA")
 ```
 
 Next you will need to connect to your Redis instance

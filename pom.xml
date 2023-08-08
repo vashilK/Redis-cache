@@ -8,7 +8,7 @@
     <name>Redis-cache</name>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-    <version>1.0.0-BETA</version>
+    <version>1.0.6-BETA</version>
     <packaging>jar</packaging>
     <url>https://github.com/vashilK/Redis-cache</url>
     <description>Based on Springboot's implementation of Redis with added functionality.</description>
