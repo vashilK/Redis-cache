@@ -8,7 +8,7 @@
     <name>Redis-cache</name>
     <groupId>io.github.vashilk</groupId>
     <artifactId>redis-cache</artifactId>
-    <version>1.0.6-BETA</version>
+    <version>1.0.6.1-BETA</version>
     <packaging>jar</packaging>
     <url>https://github.com/vashilK/Redis-cache</url>
     <description>Based on Springboot's implementation of Redis with added functionality.</description>
@@ -59,6 +59,7 @@
         <spring.aop.version>6.0.6</spring.aop.version>
         <aspectj.version>1.9.9.1</aspectj.version>
         <junit5.version>5.9.1</junit5.version>
+        <jedis.version>3.9.0</jedis.version>
     </properties>
 
     <dependencies>
@@ -73,6 +74,11 @@
             <version>${spring.aop.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>${jedis.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
