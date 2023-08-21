@@ -10,9 +10,6 @@ works at method level by using
 the provided annotations.
 ![diagram-redis-cache.png](src%2Fmain%2Fresources%2Fdiagrams%2Fdiagram-redis-cache.png)
 
-If you decide to upgrade the dependency versions make sure they are compatible with Jedis3 and not Jedis4
-as the paths for classes changed in the new version; the code will fail.
-
 ### Sample code
 You can find a sample of the implementation [here](https://github.com/vashilK/Redis-cache-implementation-example)
 
